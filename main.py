@@ -1336,6 +1336,7 @@
 # )
 
 import base64
+import re
 import unicodedata
 from pathlib import Path
 
@@ -1358,7 +1359,22 @@ st.set_page_config(
 
 
 # ============================================================
-# PALETA - IDENTIDADE VISUAL
+# DISTRIBUIDORAS
+# ============================================================
+
+DISTRIBUIDORAS = {
+    "AL": "Alagoas",
+    "AP": "Amapá",
+    "GO": "Goiás",
+    "MA": "Maranhão",
+    "PI": "Piauí",
+    "RS": "Rio Grande do Sul",
+    "PA": "Pará"
+}
+
+
+# ============================================================
+# PALETA
 # ============================================================
 
 AZUL_PRINCIPAL = "#2161DD"
@@ -1389,12 +1405,62 @@ except NameError:
     BASE_DIR = Path.cwd()
 
 
-LOGO_JORNADA = BASE_DIR / "jornada_seguranca.png"
-LOGO_EQTL = BASE_DIR / "marca_equatorial.png"
+PASTA_BASE = (
+    BASE_DIR
+    / "base"
+)
+
+LOGO_JORNADA = (
+    BASE_DIR
+    / "jornada_seguranca.png"
+)
+
+LOGO_EQTL = (
+    BASE_DIR
+    / "marca_equatorial.png"
+)
 
 
 # ============================================================
-# FUNÇÃO PARA CONVERTER IMAGEM EM BASE64
+# FUNÇÃO PARA IDENTIFICAR DISTRIBUIDORA PELO NOME DO ARQUIVO
+# ============================================================
+
+def identificar_distribuidora(nome_arquivo):
+
+    nome = (
+        Path(nome_arquivo)
+        .stem
+        .upper()
+    )
+
+    padrao = (
+        r"(?:^|[_\-\s])"
+        r"(AL|AP|GO|MA|PI|RS|PA)"
+        r"(?:[_\-\s]|$)"
+    )
+
+    resultado = re.search(
+        padrao,
+        nome
+    )
+
+    if resultado:
+
+        sigla = resultado.group(1)
+
+        return (
+            sigla,
+            DISTRIBUIDORAS[sigla]
+        )
+
+    return (
+        "N/D",
+        "Não identificada"
+    )
+
+
+# ============================================================
+# IMAGEM BASE64
 # ============================================================
 
 def imagem_base64(caminho):
@@ -1402,7 +1468,11 @@ def imagem_base64(caminho):
     if not caminho.exists():
         return None
 
-    with open(caminho, "rb") as arquivo:
+    with open(
+        caminho,
+        "rb"
+    ) as arquivo:
+
         return base64.b64encode(
             arquivo.read()
         ).decode()
@@ -1418,7 +1488,193 @@ logo_eqtl_b64 = imagem_base64(
 
 
 # ============================================================
-# CSS GLOBAL
+# FUNÇÕES DE TRATAMENTO
+# ============================================================
+
+def normalizar_texto(valor):
+
+    if pd.isna(valor):
+        return ""
+
+    valor = (
+        str(valor)
+        .strip()
+        .upper()
+    )
+
+    return "".join(
+        c
+        for c in unicodedata.normalize(
+            "NFKD",
+            valor
+        )
+        if not unicodedata.combining(c)
+    )
+
+
+def normalizar_id(serie):
+
+    return (
+        serie
+        .astype(str)
+        .str.strip()
+        .str.replace(
+            r"\.0$",
+            "",
+            regex=True
+        )
+    )
+
+
+# ============================================================
+# CARREGAMENTO DOS ARQUIVOS
+# ============================================================
+
+@st.cache_data
+def carregar_bases(caminhos):
+
+    bases = []
+    erros = []
+
+    for caminho_str in caminhos:
+
+        caminho = Path(
+            caminho_str
+        )
+
+        try:
+
+            temp = pd.read_excel(
+                caminho,
+                sheet_name="Checklists Realizados"
+            )
+
+            temp.columns = (
+                temp.columns
+                .str.strip()
+            )
+
+            sigla, distribuidora = (
+                identificar_distribuidora(
+                    caminho.name
+                )
+            )
+
+            temp[
+                "Sigla Distribuidora"
+            ] = sigla
+
+            temp[
+                "Distribuidora"
+            ] = distribuidora
+
+            temp[
+                "Arquivo Origem"
+            ] = caminho.name
+
+            bases.append(
+                temp
+            )
+
+        except Exception as erro:
+
+            erros.append(
+                {
+                    "Arquivo":
+                        caminho.name,
+
+                    "Erro":
+                        str(erro)
+                }
+            )
+
+    if not bases:
+
+        return (
+            pd.DataFrame(),
+            pd.DataFrame(erros)
+        )
+
+    df_final = pd.concat(
+        bases,
+        ignore_index=True,
+        sort=False
+    )
+
+    return (
+        df_final,
+        pd.DataFrame(erros)
+    )
+
+
+# ============================================================
+# LOCALIZA ARQUIVOS
+# ============================================================
+
+if not PASTA_BASE.exists():
+
+    st.error(
+        "A pasta `base` não foi encontrada."
+    )
+
+    st.stop()
+
+
+arquivos_excel = sorted(
+    [
+        arquivo
+        for arquivo in PASTA_BASE.glob(
+            "*.xlsx"
+        )
+        if (
+            arquivo.is_file()
+            and
+            not arquivo.name.startswith(
+                "~$"
+            )
+        )
+    ]
+)
+
+
+if not arquivos_excel:
+
+    st.error(
+        "Nenhum arquivo `.xlsx` foi encontrado "
+        "na pasta `base`."
+    )
+
+    st.stop()
+
+
+# ============================================================
+# CARREGA AS BASES
+# ============================================================
+
+caminhos = [
+    str(arquivo)
+    for arquivo in arquivos_excel
+]
+
+
+df, erros_carregamento = (
+    carregar_bases(
+        caminhos
+    )
+)
+
+
+if df.empty:
+
+    st.error(
+        "Nenhuma base pôde ser carregada."
+    )
+
+    st.stop()
+
+
+# ============================================================
+# CSS
 # ============================================================
 
 st.html(
@@ -1439,13 +1695,19 @@ st.html(
     }}
 
     .stApp {{
-        background: {CINZA_FUNDO};
+        background:
+            {CINZA_FUNDO};
     }}
 
     .block-container {{
-        padding-top: 1.5rem;
-        padding-bottom: 3rem;
-        max-width: 1500px;
+        padding-top:
+            1.5rem;
+
+        padding-bottom:
+            3rem;
+
+        max-width:
+            1500px;
     }}
 
 
@@ -1463,16 +1725,28 @@ st.html(
     }}
 
     [data-testid="stSidebar"] * {{
-        color: white;
+        color:
+            white;
     }}
 
     [data-testid="stSidebar"] label {{
-        font-weight: 600;
+        font-weight:
+            600;
+    }}
+
+    [data-testid="stSidebar"] [data-baseweb="select"] > div {{
+        background:
+            white;
+    }}
+
+    [data-testid="stSidebar"] [data-baseweb="select"] span {{
+        color:
+            {AZUL_ESCURO};
     }}
 
 
     /* =======================================================
-       HERO / CABEÇALHO
+       HERO
     ======================================================= */
 
     .hero {{
@@ -1484,7 +1758,8 @@ st.html(
                 {AZUL_PRINCIPAL} 100%
             );
 
-        border-radius: 26px;
+        border-radius:
+            26px;
 
         padding:
             42px 44px;
@@ -1501,19 +1776,28 @@ st.html(
                 .14
             );
 
-        position: relative;
-        overflow: hidden;
+        position:
+            relative;
+
+        overflow:
+            hidden;
     }}
 
     .hero::after {{
-        content: "";
+        content:
+            "";
 
-        position: absolute;
+        position:
+            absolute;
 
-        width: 340px;
-        height: 340px;
+        width:
+            340px;
 
-        border-radius: 50%;
+        height:
+            340px;
+
+        border-radius:
+            50%;
 
         background:
             rgba(
@@ -1523,31 +1807,41 @@ st.html(
                 .10
             );
 
-        right: -90px;
-        top: -165px;
+        right:
+            -90px;
+
+        top:
+            -165px;
     }}
 
     .hero-grid {{
-        display: flex;
+        display:
+            flex;
 
-        align-items: center;
+        align-items:
+            center;
 
         justify-content:
             space-between;
 
-        gap: 40px;
+        gap:
+            40px;
 
-        position: relative;
+        position:
+            relative;
 
-        z-index: 2;
+        z-index:
+            2;
     }}
 
     .hero-text {{
-        flex: 1;
+        flex:
+            1;
     }}
 
     .hero-tag {{
-        display: inline-block;
+        display:
+            inline-block;
 
         background:
             {AMARELO};
@@ -1566,9 +1860,6 @@ st.html(
 
         font-weight:
             800;
-
-        letter-spacing:
-            .4px;
 
         margin-bottom:
             16px;
@@ -1623,7 +1914,7 @@ st.html(
 
 
     /* =======================================================
-       LOGO DA JORNADA
+       LOGO
     ======================================================= */
 
     .hero-logo-container {{
@@ -1633,10 +1924,10 @@ st.html(
         display:
             flex;
 
-        align-items:
+        justify-content:
             center;
 
-        justify-content:
+        align-items:
             center;
     }}
 
@@ -1672,12 +1963,6 @@ st.html(
                 0,
                 .08
             );
-
-        backdrop-filter:
-            blur(4px);
-
-        -webkit-backdrop-filter:
-            blur(4px);
     }}
 
     .hero-logo-inner {{
@@ -1698,10 +1983,10 @@ st.html(
         display:
             flex;
 
-        align-items:
+        justify-content:
             center;
 
-        justify-content:
+        align-items:
             center;
     }}
 
@@ -1718,47 +2003,7 @@ st.html(
 
 
     /* =======================================================
-       RESPONSIVIDADE
-    ======================================================= */
-
-    @media (max-width: 900px) {{
-
-        .hero {{
-            padding:
-                32px 28px;
-        }}
-
-        .hero-grid {{
-            flex-direction:
-                column;
-
-            align-items:
-                flex-start;
-        }}
-
-        .hero-title {{
-            font-size:
-                34px;
-        }}
-
-        .hero-logo-container {{
-            min-width:
-                0;
-
-            width:
-                100%;
-        }}
-
-        .hero-logo {{
-            width:
-                220px;
-        }}
-
-    }}
-
-
-    /* =======================================================
-       TÍTULOS DE SEÇÃO
+       SECTION
     ======================================================= */
 
     .section-title {{
@@ -1803,7 +2048,7 @@ st.html(
 
 
     /* =======================================================
-       CARDS
+       KPI
     ======================================================= */
 
     .kpi-card {{
@@ -1840,7 +2085,8 @@ st.html(
     }}
 
     .kpi-card::before {{
-        content: "";
+        content:
+            "";
 
         position:
             absolute;
@@ -1871,9 +2117,6 @@ st.html(
         font-weight:
             800;
 
-        letter-spacing:
-            .2px;
-
         text-transform:
             uppercase;
 
@@ -1891,9 +2134,6 @@ st.html(
         font-weight:
             900;
 
-        line-height:
-            1;
-
         margin-bottom:
             9px;
     }}
@@ -1907,44 +2147,12 @@ st.html(
 
         font-weight:
             500;
-
-        line-height:
-            1.4;
     }}
 
 
     /* =======================================================
-       BOX DE INFORMAÇÃO
+       WARNING
     ======================================================= */
-
-    .info-box {{
-        background:
-            {BRANCO};
-
-        border:
-            1px solid
-            {CINZA_BORDA};
-
-        border-left:
-            5px solid
-            {AZUL_PRINCIPAL};
-
-        padding:
-            16px 18px;
-
-        border-radius:
-            12px;
-
-        color:
-            {PRETO};
-
-        font-size:
-            13px;
-
-        margin:
-            12px 0;
-    }}
-
 
     .warning-box {{
         background:
@@ -1979,7 +2187,7 @@ st.html(
 
 
     /* =======================================================
-       DATAFRAME
+       TABELAS
     ======================================================= */
 
     [data-testid="stDataFrame"] {{
@@ -1999,59 +2207,32 @@ st.html(
 
 
     /* =======================================================
-       FILE UPLOADER
+       RESPONSIVIDADE
     ======================================================= */
 
-    [data-testid="stFileUploader"] {{
-        background:
-            white;
+    @media (max-width: 900px) {{
 
-        border:
-            1px solid
-            {CINZA_BORDA};
+        .hero-grid {{
+            flex-direction:
+                column;
 
-        border-radius:
-            14px;
+            align-items:
+                flex-start;
+        }}
 
-        padding:
-            5px 10px;
-    }}
+        .hero-title {{
+            font-size:
+                34px;
+        }}
 
+        .hero-logo-container {{
+            width:
+                100%;
 
-    /* =======================================================
-       EXPANDER
-    ======================================================= */
+            min-width:
+                0;
+        }}
 
-    [data-testid="stExpander"] {{
-        background:
-            white;
-
-        border:
-            1px solid
-            {CINZA_BORDA};
-
-        border-radius:
-            12px;
-    }}
-
-
-    /* =======================================================
-       RADIO
-    ======================================================= */
-
-    div[role="radiogroup"] {{
-        background:
-            white;
-
-        padding:
-            8px 12px;
-
-        border-radius:
-            12px;
-
-        border:
-            1px solid
-            {CINZA_BORDA};
     }}
 
     </style>
@@ -2161,25 +2342,18 @@ def aplicar_layout_plotly(
 
             xanchor="right",
             x=1
-        ),
-
-        hoverlabel=dict(
-            font_family="Montserrat"
         )
     )
-
 
     fig.update_xaxes(
         showgrid=False,
         linecolor=CINZA_BORDA
     )
 
-
     fig.update_yaxes(
         gridcolor="#EDF1F7",
         zeroline=False
     )
-
 
     return fig
 
@@ -2190,26 +2364,24 @@ def aplicar_layout_plotly(
 
 if logo_jornada_b64:
 
-    logo_html = (
-        f"""
-        <div class="hero-logo-container">
+    logo_html = f"""
+    <div class="hero-logo-container">
 
-            <div class="hero-logo-box">
+        <div class="hero-logo-box">
 
-                <div class="hero-logo-inner">
+            <div class="hero-logo-inner">
 
-                    <img
-                        class="hero-logo"
-                        src="data:image/png;base64,{logo_jornada_b64}"
-                    >
-
-                </div>
+                <img
+                    class="hero-logo"
+                    src="data:image/png;base64,{logo_jornada_b64}"
+                >
 
             </div>
 
         </div>
-        """
-    )
+
+    </div>
+    """
 
 else:
 
@@ -2278,11 +2450,9 @@ if logo_eqtl_b64:
 
             <img
                 src="data:image/png;base64,{logo_eqtl_b64}"
-
                 style="
                     width:100%;
                     max-width:220px;
-                    object-fit:contain;
                 "
             >
 
@@ -2297,133 +2467,152 @@ st.sidebar.markdown(
 
 
 # ============================================================
-# FUNÇÕES DE DADOS
+# DISTRIBUIDORAS DISPONÍVEIS
 # ============================================================
 
-def normalizar_texto(
-    valor
-):
-
-    if pd.isna(valor):
-        return ""
-
-    valor = (
-        str(valor)
-        .strip()
-        .upper()
-    )
-
-    return "".join(
-
-        c
-
-        for c in unicodedata.normalize(
-            "NFKD",
-            valor
-        )
-
-        if not unicodedata.combining(c)
-    )
-
-
-def normalizar_id(
-    serie
-):
-
-    return (
-
-        serie
-
-        .astype(str)
-
-        .str.strip()
-
-        .str.replace(
-            r"\.0$",
-            "",
-            regex=True
-        )
-    )
-
-
-@st.cache_data
-def carregar_dados(
-    arquivo
-):
-
-    return pd.read_excel(
-        arquivo,
-        sheet_name="Checklists Realizados"
-    )
-
-
-# ============================================================
-# UPLOAD
-# ============================================================
-
-arquivo = st.file_uploader(
-    "Selecione a base ESS",
-    type=["xlsx"]
+distribuidoras_presentes = set(
+    df[
+        "Distribuidora"
+    ]
+    .dropna()
+    .unique()
 )
 
 
-if arquivo is None:
+# Mantém a ordem desejada
+distribuidoras_disponiveis = [
 
-    st.html(
-        """
-        <div class="info-box">
+    nome
 
-            <strong>
-                Carregue a planilha do ESS
-            </strong>
+    for sigla, nome
+    in DISTRIBUIDORAS.items()
 
-            para iniciar a análise da
-            Taxa de Contato.
-
-        </div>
-        """
-    )
-
-    st.stop()
+    if nome
+    in distribuidoras_presentes
+]
 
 
-# ============================================================
-# CARREGAMENTO
-# ============================================================
-
-df = carregar_dados(
-    arquivo
+opcoes_distribuidora = (
+    [
+        "Todas as distribuidoras"
+    ]
+    +
+    distribuidoras_disponiveis
 )
 
 
-df.columns = (
-    df.columns
-    .str.strip()
+distribuidora_selecionada = (
+    st.sidebar.selectbox(
+
+        "Distribuidora",
+
+        opcoes_distribuidora
+    )
 )
 
 
 # ============================================================
-# DATA
+# FILTRA DISTRIBUIDORA
+# ============================================================
+
+if (
+    distribuidora_selecionada
+    !=
+    "Todas as distribuidoras"
+):
+
+    df = df[
+        df[
+            "Distribuidora"
+        ]
+        ==
+        distribuidora_selecionada
+    ].copy()
+
+
+# ============================================================
+# INFORMAÇÃO DISCRETA DA BASE
+# ============================================================
+
+if (
+    distribuidora_selecionada
+    ==
+    "Todas as distribuidoras"
+):
+
+    st.sidebar.caption(
+        f"{len(distribuidoras_disponiveis)} "
+        "distribuidora(s) disponível(is)"
+    )
+
+else:
+
+    sigla_selecionada = next(
+        (
+            sigla
+
+            for sigla, nome
+            in DISTRIBUIDORAS.items()
+
+            if nome
+            ==
+            distribuidora_selecionada
+        ),
+        ""
+    )
+
+    st.sidebar.caption(
+        f"{sigla_selecionada} • "
+        f"{distribuidora_selecionada}"
+    )
+
+
+# ============================================================
+# AVISO DE ARQUIVO NÃO IDENTIFICADO
+# ============================================================
+
+arquivos_nao_identificados = (
+    df[
+        df[
+            "Distribuidora"
+        ]
+        ==
+        "Não identificada"
+    ][
+        "Arquivo Origem"
+    ]
+    .dropna()
+    .unique()
+)
+
+
+if len(
+    arquivos_nao_identificados
+) > 0:
+
+    st.sidebar.warning(
+        "Há arquivos cujo nome não contém "
+        "uma sigla de distribuidora reconhecida."
+    )
+
+
+# ============================================================
+# TRATAMENTO DA BASE
 # ============================================================
 
 df[
     "Data de Execução"
 ] = pd.to_datetime(
-
     df[
         "Data de Execução"
     ],
-
     errors="coerce"
 )
 
 
 df = df.dropna(
-
     subset=[
-
         "ID da Equipe",
-
         "Data de Execução"
     ]
 )
@@ -2432,7 +2621,6 @@ df = df.dropna(
 df[
     "ID da Equipe"
 ] = normalizar_id(
-
     df[
         "ID da Equipe"
     ]
@@ -2440,19 +2628,41 @@ df[
 
 
 # ============================================================
-# NORMALIZAÇÃO
+# CHAVE ÚNICA DA EQUIPE
 # ============================================================
+
+# Importante principalmente quando "Todas as distribuidoras"
+# estiver selecionado.
+#
+# Evita que o ID 123 de Alagoas seja tratado como a mesma
+# equipe que o ID 123 do Amapá.
+
+df[
+    "Chave Equipe"
+] = (
+    df[
+        "Sigla Distribuidora"
+    ]
+    .astype(str)
+    .str.strip()
+    +
+    " | "
+    +
+    df[
+        "ID da Equipe"
+    ]
+    .astype(str)
+    .str.strip()
+)
+
 
 df[
     "Cargo Normalizado"
 ] = (
-
     df[
         "Cargo"
     ]
-
     .fillna("")
-
     .apply(
         normalizar_texto
     )
@@ -2462,13 +2672,10 @@ df[
 df[
     "Conformidade Normalizada"
 ] = (
-
     df[
         "Conformidade"
     ]
-
     .fillna("")
-
     .apply(
         normalizar_texto
     )
@@ -2480,27 +2687,28 @@ df[
 # ============================================================
 
 anos = sorted(
-
     df[
         "Data de Execução"
     ]
-
     .dt.year
-
     .dropna()
-
     .unique()
 )
 
 
+if not anos:
+
+    st.warning(
+        "Não foram encontradas datas válidas."
+    )
+
+    st.stop()
+
+
 ano = st.sidebar.selectbox(
-
     "Ano de análise",
-
     anos,
-
-    index=
-        len(anos) - 1
+    index=len(anos) - 1
 )
 
 
@@ -2509,17 +2717,14 @@ ano = st.sidebar.selectbox(
 # ============================================================
 
 df = df[
-
     (
         df[
             "Data de Execução"
-        ]
-        .dt.year
-        == ano
+        ].dt.year
+        ==
+        ano
     )
-
     &
-
     (
         df[
             "Data de Execução"
@@ -2530,7 +2735,6 @@ df = df[
             6
         )
     )
-
 ].copy()
 
 
@@ -2539,17 +2743,11 @@ df = df[
 # ============================================================
 
 meses = {
-
     1: "Janeiro",
-
     2: "Fevereiro",
-
     3: "Março",
-
     4: "Abril",
-
     5: "Maio",
-
     6: "Junho"
 }
 
@@ -2562,7 +2760,6 @@ ordem_meses = list(
 df[
     "Mês Número"
 ] = (
-
     df[
         "Data de Execução"
     ]
@@ -2573,7 +2770,6 @@ df[
 df[
     "Mês"
 ] = (
-
     df[
         "Mês Número"
     ]
@@ -2584,17 +2780,30 @@ df[
 
 
 # ============================================================
-# UNIVERSO DE EQUIPES
+# CADASTRO DAS EQUIPES
 # ============================================================
 
-todas_equipes = sorted(
-
+cadastro_equipes = (
     df[
-        "ID da Equipe"
+        [
+            "Chave Equipe",
+            "Sigla Distribuidora",
+            "Distribuidora",
+            "ID da Equipe"
+        ]
     ]
+    .drop_duplicates(
+        subset=[
+            "Chave Equipe"
+        ]
+    )
+)
 
-    .dropna()
 
+todas_equipes = sorted(
+    cadastro_equipes[
+        "Chave Equipe"
+    ]
     .unique()
 )
 
@@ -2618,125 +2827,95 @@ if total_equipes == 0:
 # ============================================================
 
 total_inspetores = (
-
     df[
         "Inspetor"
     ]
-
     .dropna()
-
     .astype(str)
-
     .str.strip()
-
     .replace(
         "",
         pd.NA
     )
-
     .dropna()
-
     .nunique()
 )
 
 
 # ============================================================
-# FILTRO DE LIDERANÇA
+# FILTRO LIDERANÇA
 # ============================================================
 
 padrao_lideranca = (
-
     r"\bLIDER\b|"
-
     r"\bGERENTE\b|"
-
     r"\bGTE\b"
 )
 
 
 mascara_lideranca = (
-
     df[
         "Cargo Normalizado"
     ]
-
     .str.contains(
-
         padrao_lideranca,
-
         regex=True,
-
         na=False
     )
 )
 
 
 df_lideranca = (
-
     df[
         mascara_lideranca
     ]
-
     .copy()
 )
 
 
 df_outros_cargos = (
-
     df[
         ~mascara_lideranca
     ]
-
     .copy()
 )
 
 
 # ============================================================
-# LÍDERES
+# TOTAL DE LÍDERES
 # ============================================================
 
 total_lideres = (
-
     df_lideranca[
         "Inspetor"
     ]
-
     .dropna()
-
     .astype(str)
-
     .str.strip()
-
     .replace(
         "",
         pd.NA
     )
-
     .dropna()
-
     .nunique()
 )
 
 
 # ============================================================
-# INSPEÇÕES DISTINTAS POR EQUIPE / MÊS
+# INSPEÇÕES POR EQUIPE / MÊS
 # ============================================================
 
 inspecoes_equipe_mes = (
-
     df_lideranca
-
     .groupby(
         [
-            "ID da Equipe",
+            "Chave Equipe",
             "Mês Número"
         ]
     )[
         "Inspeção"
     ]
-
     .nunique()
-
     .unstack(
         fill_value=0
     )
@@ -2744,25 +2923,17 @@ inspecoes_equipe_mes = (
 
 
 inspecoes_equipe_mes = (
-
     inspecoes_equipe_mes
-
     .reindex(
-
-        index=
-            todas_equipes,
-
+        index=todas_equipes,
         fill_value=0
     )
 )
 
 
 inspecoes_equipe_mes = (
-
     inspecoes_equipe_mes
-
     .reindex(
-
         columns=[
             1,
             2,
@@ -2771,7 +2942,6 @@ inspecoes_equipe_mes = (
             5,
             6
         ],
-
         fill_value=0
     )
 )
@@ -2788,12 +2958,12 @@ inspecoes_equipe_mes.columns = (
 
 teve_contato = (
     inspecoes_equipe_mes
-    > 0
+    >
+    0
 )
 
 
 contato_t1_equipe = (
-
     teve_contato[
         [
             "Janeiro",
@@ -2801,7 +2971,6 @@ contato_t1_equipe = (
             "Março"
         ]
     ]
-
     .any(
         axis=1
     )
@@ -2809,7 +2978,6 @@ contato_t1_equipe = (
 
 
 contato_t2_equipe = (
-
     teve_contato[
         [
             "Abril",
@@ -2817,7 +2985,6 @@ contato_t2_equipe = (
             "Junho"
         ]
     ]
-
     .any(
         axis=1
     )
@@ -2825,9 +2992,7 @@ contato_t2_equipe = (
 
 
 contato_semestre_equipe = (
-
     teve_contato
-
     .any(
         axis=1
     )
@@ -2835,12 +3000,13 @@ contato_semestre_equipe = (
 
 
 # ============================================================
-# QUANTIDADES / TAXAS
+# QUANTIDADES
 # ============================================================
 
 equipes_contato_t1 = int(
     contato_t1_equipe.sum()
 )
+
 
 equipes_contato_t2 = int(
     contato_t2_equipe.sum()
@@ -2895,58 +3061,43 @@ taxa_sem_contato_semestre = (
 
 
 # ============================================================
-# EQUIPES SEM CONTATO DA LIDERANÇA
+# SEM CONTATO
 # ============================================================
 
 ids_sem_contato = (
-
     contato_semestre_equipe[
         ~contato_semestre_equipe
     ]
-
     .index
-
     .tolist()
 )
 
 
-# ============================================================
-# OUTROS CARGOS
-# ============================================================
-
 outros_sem_contato = (
-
     df_outros_cargos[
-
         df_outros_cargos[
-            "ID da Equipe"
+            "Chave Equipe"
         ]
-
         .isin(
             ids_sem_contato
         )
     ]
-
     .copy()
 )
 
 
 equipes_inspecionadas_outros = (
-
     outros_sem_contato[
-        "ID da Equipe"
+        "Chave Equipe"
     ]
-
     .nunique()
 )
 
 
 inspecoes_outros_sem_contato = (
-
     outros_sem_contato[
         "Inspeção"
     ]
-
     .nunique()
 )
 
@@ -2954,7 +3105,6 @@ inspecoes_outros_sem_contato = (
 if equipes_inspecionadas_outros > 0:
 
     media_outros_por_equipe = (
-
         inspecoes_outros_sem_contato
         /
         equipes_inspecionadas_outros
@@ -2966,21 +3116,18 @@ else:
 
 
 # ============================================================
-# CARGOS DAS EQUIPES SEM CONTATO
+# CARGOS
 # ============================================================
 
 cargos_sem_contato = (
-
     outros_sem_contato
-
     .groupby(
         "Cargo Normalizado"
     )
-
     .agg(
 
         Equipes=(
-            "ID da Equipe",
+            "Chave Equipe",
             "nunique"
         ),
 
@@ -2994,21 +3141,17 @@ cargos_sem_contato = (
             "nunique"
         )
     )
-
     .reset_index()
 )
 
 
 cargos_sem_contato = (
-
     cargos_sem_contato[
-
         cargos_sem_contato[
             "Cargo Normalizado"
         ]
         != ""
     ]
-
     .sort_values(
         "Equipes",
         ascending=False
@@ -3026,11 +3169,9 @@ resumo_mensal = []
 for numero_mes, nome_mes in meses.items():
 
     com_contato = int(
-
         teve_contato[
             nome_mes
         ]
-
         .sum()
     )
 
@@ -3050,48 +3191,37 @@ for numero_mes, nome_mes in meses.items():
 
 
     inspecoes_distintas = (
-
         df_lideranca[
-
             df_lideranca[
                 "Mês Número"
             ]
-            == numero_mes
-
+            ==
+            numero_mes
         ][
             "Inspeção"
         ]
-
         .nunique()
     )
 
 
     lideres_ativos = (
-
         df_lideranca[
-
             df_lideranca[
                 "Mês Número"
             ]
-            == numero_mes
-
+            ==
+            numero_mes
         ][
             "Inspetor"
         ]
-
         .dropna()
-
         .astype(str)
-
         .str.strip()
-
         .replace(
             "",
             pd.NA
         )
-
         .dropna()
-
         .nunique()
     )
 
@@ -3136,7 +3266,6 @@ for numero_mes, nome_mes in meses.items():
 
         "Presença de líderes":
             presenca
-
     })
 
 
@@ -3146,27 +3275,23 @@ resumo_mensal = pd.DataFrame(
 
 
 media_equipes_mes = (
-
     resumo_mensal[
         "Com contato"
     ]
-
     .mean()
 )
 
 
 media_presenca_lideres = (
-
     resumo_mensal[
         "Presença de líderes"
     ]
-
     .mean()
 )
 
 
 # ============================================================
-# INDICADORES DE COBERTURA
+# INDICADORES
 # ============================================================
 
 titulo_secao(
@@ -3284,11 +3409,9 @@ titulo_secao(
 
 
 cores_com = [
-
     AZUL_CLARO,
     AZUL_CLARO,
     AZUL_CLARO,
-
     AZUL_PRINCIPAL,
     AZUL_PRINCIPAL,
     AZUL_PRINCIPAL
@@ -3296,11 +3419,9 @@ cores_com = [
 
 
 cores_sem = [
-
     "#D9E7F5",
     "#D9E7F5",
     "#D9E7F5",
-
     "#A8B8D0",
     "#A8B8D0",
     "#A8B8D0"
@@ -3311,29 +3432,22 @@ fig_mensal = go.Figure()
 
 
 fig_mensal.add_trace(
-
     go.Bar(
+        name="Com contato",
 
-        name=
-            "Com contato",
+        x=resumo_mensal[
+            "Mês"
+        ],
 
-        x=
-            resumo_mensal[
-                "Mês"
-            ],
+        y=resumo_mensal[
+            "Com contato"
+        ],
 
-        y=
-            resumo_mensal[
-                "Com contato"
-            ],
+        text=resumo_mensal[
+            "Com contato"
+        ],
 
-        text=
-            resumo_mensal[
-                "Com contato"
-            ],
-
-        textposition=
-            "inside",
+        textposition="inside",
 
         marker_color=
             cores_com
@@ -3342,29 +3456,22 @@ fig_mensal.add_trace(
 
 
 fig_mensal.add_trace(
-
     go.Bar(
+        name="Sem contato",
 
-        name=
-            "Sem contato",
+        x=resumo_mensal[
+            "Mês"
+        ],
 
-        x=
-            resumo_mensal[
-                "Mês"
-            ],
+        y=resumo_mensal[
+            "Sem contato"
+        ],
 
-        y=
-            resumo_mensal[
-                "Sem contato"
-            ],
+        text=resumo_mensal[
+            "Sem contato"
+        ],
 
-        text=
-            resumo_mensal[
-                "Sem contato"
-            ],
-
-        textposition=
-            "inside",
+        textposition="inside",
 
         marker_color=
             cores_sem
@@ -3373,20 +3480,13 @@ fig_mensal.add_trace(
 
 
 fig_mensal.update_layout(
-    barmode=
-        "stack"
+    barmode="stack"
 )
 
 
 aplicar_layout_plotly(
     fig_mensal,
     "Equipes com contato vs. sem contato"
-)
-
-
-fig_mensal.update_yaxes(
-    title=
-        "Quantidade de equipes"
 )
 
 
@@ -3397,7 +3497,7 @@ st.plotly_chart(
 
 
 # ============================================================
-# DIAGNÓSTICO DA BAIXA COBERTURA
+# DIAGNÓSTICO
 # ============================================================
 
 titulo_secao(
@@ -3469,8 +3569,8 @@ if (
             <strong>
                 {equipes_sem_contato_semestre}
             </strong>
-            equipes classificadas como sem contato
-            da liderança receberam inspeções de outros cargos.
+            equipes classificadas como sem contato da liderança
+            receberam inspeções de outros cargos.
 
             <br><br>
 
@@ -3478,7 +3578,7 @@ if (
             <strong>
                 ausência de contato de Líder/Gerente/GTE
             </strong>
-            e não ausência total de atividade de inspeção.
+            e não ausência total de inspeção.
 
         </div>
         """
@@ -3486,15 +3586,12 @@ if (
 
 
 # ============================================================
-# QUEM INSPECIONOU ESSAS EQUIPES
+# OUTROS CARGOS
 # ============================================================
 
 top_cargos = (
-
     cargos_sem_contato
-
     .head(10)
-
     .sort_values(
         "Equipes",
         ascending=True
@@ -3505,25 +3602,15 @@ top_cargos = (
 if not top_cargos.empty:
 
     fig_cargos = px.bar(
-
         top_cargos,
-
-        x=
-            "Equipes",
-
-        y=
-            "Cargo Normalizado",
-
-        orientation=
-            "h",
-
-        text=
-            "Equipes"
+        x="Equipes",
+        y="Cargo Normalizado",
+        orientation="h",
+        text="Equipes"
     )
 
 
     fig_cargos.update_traces(
-
         marker_color=
             AZUL_PRINCIPAL,
 
@@ -3533,21 +3620,8 @@ if not top_cargos.empty:
 
 
     aplicar_layout_plotly(
-
         fig_cargos,
-
         "Quem inspecionou as equipes sem contato da liderança?"
-    )
-
-
-    fig_cargos.update_xaxes(
-        title=
-            "Equipes distintas"
-    )
-
-
-    fig_cargos.update_yaxes(
-        title=""
     )
 
 
@@ -3558,7 +3632,7 @@ if not top_cargos.empty:
 
 
 # ============================================================
-# CONFORMIDADES E NÃO CONFORMIDADES
+# CONFORMIDADES
 # ============================================================
 
 titulo_secao(
@@ -3567,22 +3641,15 @@ titulo_secao(
 )
 
 
-# ============================================================
-# STATUS POR INSPEÇÃO
-# ============================================================
-
 status_inspecoes = (
-
     df_lideranca
-
     .groupby(
         [
             "Inspeção",
-            "ID da Equipe"
+            "Chave Equipe"
         ],
         as_index=False
     )
-
     .agg(
 
         Data=(
@@ -3591,17 +3658,14 @@ status_inspecoes = (
         ),
 
         Possui_NC=(
-
             "Conformidade Normalizada",
 
             lambda valores:
-
                 (
                     valores
                     ==
                     "NAO CONFORME"
                 )
-
                 .any()
         )
     )
@@ -3611,30 +3675,27 @@ status_inspecoes = (
 status_inspecoes[
     "Status"
 ] = (
-
     status_inspecoes[
         "Possui_NC"
     ]
+    .map(
+        {
+            True:
+                "Não Conforme",
 
-    .map({
-
-        True:
-            "Não Conforme",
-
-        False:
-            "Conforme"
-    })
+            False:
+                "Conforme"
+        }
+    )
 )
 
 
 status_inspecoes[
     "Mês Número"
 ] = (
-
     status_inspecoes[
         "Data"
     ]
-
     .dt.month
 )
 
@@ -3642,20 +3703,14 @@ status_inspecoes[
 status_inspecoes[
     "Mês"
 ] = (
-
     status_inspecoes[
         "Mês Número"
     ]
-
     .map(
         meses
     )
 )
 
-
-# ============================================================
-# MÉTRICAS DE CONFORMIDADE
-# ============================================================
 
 total_inspecoes_lideranca = len(
     status_inspecoes
@@ -3663,29 +3718,23 @@ total_inspecoes_lideranca = len(
 
 
 total_conformes = int(
-
     status_inspecoes[
         "Status"
     ]
-
     .eq(
         "Conforme"
     )
-
     .sum()
 )
 
 
 total_nao_conformes = int(
-
     status_inspecoes[
         "Status"
     ]
-
     .eq(
         "Não Conforme"
     )
-
     .sum()
 )
 
@@ -3693,9 +3742,7 @@ total_nao_conformes = int(
 if total_inspecoes_lideranca > 0:
 
     taxa_conformidade = (
-
         total_conformes
-
         /
         total_inspecoes_lideranca
     )
@@ -3751,13 +3798,11 @@ with c4:
 
 
 # ============================================================
-# CONFORMIDADE POR MÊS
+# CONFORMIDADE MENSAL
 # ============================================================
 
 conformidade_mensal = (
-
     status_inspecoes
-
     .groupby(
         [
             "Mês Número",
@@ -3765,9 +3810,7 @@ conformidade_mensal = (
             "Status"
         ]
     )
-
     .size()
-
     .reset_index(
         name=
             "Inspeções"
@@ -3778,7 +3821,6 @@ conformidade_mensal = (
 conformidade_mensal[
     "Mês"
 ] = pd.Categorical(
-
     conformidade_mensal[
         "Mês"
     ],
@@ -3786,42 +3828,24 @@ conformidade_mensal[
     categories=
         ordem_meses,
 
-    ordered=
-        True
-)
-
-
-conformidade_mensal = (
-
-    conformidade_mensal
-
-    .sort_values(
-        "Mês"
-    )
+    ordered=True
 )
 
 
 fig_conformidade = px.bar(
-
     conformidade_mensal,
 
-    x=
-        "Mês",
+    x="Mês",
 
-    y=
-        "Inspeções",
+    y="Inspeções",
 
-    color=
-        "Status",
+    color="Status",
 
-    barmode=
-        "group",
+    barmode="group",
 
-    text=
-        "Inspeções",
+    text="Inspeções",
 
     color_discrete_map={
-
         "Conforme":
             VERDE,
 
@@ -3838,16 +3862,8 @@ fig_conformidade.update_traces(
 
 
 aplicar_layout_plotly(
-
     fig_conformidade,
-
     "Conformidade das inspeções por mês"
-)
-
-
-fig_conformidade.update_yaxes(
-    title=
-        "Quantidade de inspeções"
 )
 
 
@@ -3858,21 +3874,17 @@ st.plotly_chart(
 
 
 # ============================================================
-# DETALHAMENTO DAS NÃO CONFORMIDADES
+# NÃO CONFORMIDADES
 # ============================================================
 
 nc_detalhe = (
-
     df_lideranca[
-
         df_lideranca[
             "Conformidade Normalizada"
         ]
-
         ==
         "NAO CONFORME"
     ]
-
     .copy()
 )
 
@@ -3885,65 +3897,30 @@ if (
     nc_detalhe[
         "Não Conformidade"
     ] = (
-
         nc_detalhe[
             "Não Conformidade"
         ]
-
         .fillna(
             "Sem descrição informada"
         )
-
         .astype(str)
-
         .str.strip()
     )
 
 
     nc_detalhe.loc[
-
         nc_detalhe[
             "Não Conformidade"
         ]
         == "",
-
         "Não Conformidade"
-
-    ] = "Sem descrição informada"
-
-
-    colunas_chave_nc = [
-
-        coluna
-
-        for coluna in [
-
-            "Inspeção",
-            "ID da Equipe",
-            "Membro",
-            "Não Conformidade"
-        ]
-
-        if coluna
-        in nc_detalhe.columns
-    ]
-
-
-    if colunas_chave_nc:
-
-        nc_detalhe = (
-
-            nc_detalhe
-
-            .drop_duplicates(
-                subset=
-                    colunas_chave_nc
-            )
-        )
+    ] = (
+        "Sem descrição informada"
+    )
 
 
 # ============================================================
-# PRINCIPAIS NÃO CONFORMIDADES
+# PRINCIPAIS NCS
 # ============================================================
 
 if (
@@ -3954,31 +3931,23 @@ if (
 ):
 
     ranking_nc = (
-
         nc_detalhe[
             "Não Conformidade"
         ]
-
         .value_counts()
-
         .reset_index()
     )
 
 
     ranking_nc.columns = [
-
         "Descrição",
-
         "Ocorrências"
     ]
 
 
     top_nc = (
-
         ranking_nc
-
         .head(15)
-
         .sort_values(
             "Ocorrências",
             ascending=True
@@ -3987,25 +3956,19 @@ if (
 
 
     fig_nc = px.bar(
-
         top_nc,
 
-        x=
-            "Ocorrências",
+        x="Ocorrências",
 
-        y=
-            "Descrição",
+        y="Descrição",
 
-        orientation=
-            "h",
+        orientation="h",
 
-        text=
-            "Ocorrências"
+        text="Ocorrências"
     )
 
 
     fig_nc.update_traces(
-
         marker_color=
             LARANJA,
 
@@ -4014,130 +3977,20 @@ if (
     )
 
 
+    fig_nc.update_layout(
+        height=
+            620
+    )
+
+
     aplicar_layout_plotly(
-
         fig_nc,
-
         "Principais não conformidades identificadas"
     )
 
 
-    fig_nc.update_layout(
-        height=620
-    )
-
-
-    fig_nc.update_yaxes(
-        title=""
-    )
-
-
     st.plotly_chart(
         fig_nc,
-        use_container_width=True
-    )
-
-
-# ============================================================
-# CATEGORIAS DE NC
-# ============================================================
-
-if (
-    not nc_detalhe.empty
-    and
-    "Categoria"
-    in nc_detalhe.columns
-):
-
-    categorias_nc = (
-
-        nc_detalhe[
-            "Categoria"
-        ]
-
-        .fillna(
-            "Sem categoria"
-        )
-
-        .astype(str)
-
-        .str.strip()
-
-        .replace(
-            "",
-            "Sem categoria"
-        )
-
-        .value_counts()
-
-        .reset_index()
-    )
-
-
-    categorias_nc.columns = [
-
-        "Categoria",
-
-        "Ocorrências"
-    ]
-
-
-    top_categorias = (
-
-        categorias_nc
-
-        .head(10)
-
-        .sort_values(
-            "Ocorrências",
-            ascending=True
-        )
-    )
-
-
-    fig_categoria = px.bar(
-
-        top_categorias,
-
-        x=
-            "Ocorrências",
-
-        y=
-            "Categoria",
-
-        orientation=
-            "h",
-
-        text=
-            "Ocorrências"
-    )
-
-
-    fig_categoria.update_traces(
-
-        marker_color=
-            AMARELO,
-
-        textposition=
-            "outside"
-    )
-
-
-    aplicar_layout_plotly(
-
-        fig_categoria,
-
-        "Não conformidades por categoria"
-    )
-
-
-    fig_categoria.update_yaxes(
-        title=""
-    )
-
-
-    st.plotly_chart(
-        fig_categoria,
         use_container_width=True
     )
 
@@ -4155,50 +4008,34 @@ titulo_secao(
 if not nc_detalhe.empty:
 
     colunas_nc = [
-
+        "Distribuidora",
         "Data de Execução",
-
         "Inspeção",
-
         "ID da Equipe",
-
         "Inspetor",
-
         "Cargo",
-
         "Membro",
-
         "Categoria",
-
         "Não Conformidade",
-
         "Gravidade Não Conformidade",
-
         "Regional",
-
         "Local",
-
         "Tipo de Serviço"
     ]
 
 
     colunas_nc = [
-
         coluna
-
         for coluna in colunas_nc
-
         if coluna
         in nc_detalhe.columns
     ]
 
 
     tabela_nc = (
-
         nc_detalhe[
             colunas_nc
         ]
-
         .sort_values(
             "Data de Execução",
             ascending=False
@@ -4206,64 +4043,10 @@ if not nc_detalhe.empty:
     )
 
 
-    if (
-        "Não Conformidade"
-        in tabela_nc.columns
-    ):
-
-        descricoes = sorted(
-
-            tabela_nc[
-                "Não Conformidade"
-            ]
-
-            .dropna()
-
-            .unique()
-        )
-
-
-        filtro_descricao = (
-            st.multiselect(
-
-                "Filtrar por descrição de NC",
-
-                descricoes
-            )
-        )
-
-
-        if filtro_descricao:
-
-            tabela_nc = (
-
-                tabela_nc[
-
-                    tabela_nc[
-                        "Não Conformidade"
-                    ]
-
-                    .isin(
-                        filtro_descricao
-                    )
-                ]
-            )
-
-
     st.dataframe(
-
         tabela_nc,
-
         use_container_width=True,
-
         hide_index=True
-    )
-
-
-else:
-
-    st.success(
-        "Nenhuma não conformidade encontrada."
     )
 
 
@@ -4286,11 +4069,9 @@ resumo_visual = (
 resumo_visual[
     "Taxa de contato"
 ] = (
-
     resumo_visual[
         "Taxa de contato"
     ]
-
     .map(
         lambda x:
             f"{x:.1%}"
@@ -4301,11 +4082,9 @@ resumo_visual[
 resumo_visual[
     "Presença de líderes"
 ] = (
-
     resumo_visual[
         "Presença de líderes"
     ]
-
     .map(
         lambda x:
             f"{x:.1%}"
@@ -4314,11 +4093,8 @@ resumo_visual[
 
 
 st.dataframe(
-
     resumo_visual,
-
     use_container_width=True,
-
     hide_index=True
 )
 
@@ -4342,11 +4118,9 @@ tabela_equipes = (
 tabela_equipes[
     "Total"
 ] = (
-
     tabela_equipes[
         ordem_meses
     ]
-
     .sum(
         axis=1
     )
@@ -4354,25 +4128,53 @@ tabela_equipes[
 
 
 tabela_equipes = (
-
     tabela_equipes
-
     .reset_index()
 )
 
 
-opcao = st.radio(
+# Adiciona novamente dados legíveis da equipe
+tabela_equipes = (
+    tabela_equipes
+    .merge(
+        cadastro_equipes,
+        on="Chave Equipe",
+        how="left"
+    )
+)
 
+
+colunas_ordem = [
+    "Distribuidora",
+    "ID da Equipe",
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Total"
+]
+
+
+tabela_equipes = (
+    tabela_equipes[
+        [
+            coluna
+            for coluna in colunas_ordem
+            if coluna in tabela_equipes.columns
+        ]
+    ]
+)
+
+
+opcao = st.radio(
     "Visualização",
 
     [
-
         "Todas as equipes",
-
         "Somente equipes sem contato",
-
         "Somente equipes com contato"
-
     ],
 
     horizontal=True
@@ -4386,14 +4188,12 @@ if (
 ):
 
     tabela_exibicao = (
-
         tabela_equipes[
-
             tabela_equipes[
                 "Total"
             ]
-
-            == 0
+            ==
+            0
         ]
     )
 
@@ -4405,14 +4205,12 @@ elif (
 ):
 
     tabela_exibicao = (
-
         tabela_equipes[
-
             tabela_equipes[
                 "Total"
             ]
-
-            > 0
+            >
+            0
         ]
     )
 
@@ -4426,13 +4224,27 @@ else:
 
 
 st.dataframe(
-
     tabela_exibicao,
-
     use_container_width=True,
-
     hide_index=True
 )
+
+
+# ============================================================
+# ERROS
+# ============================================================
+
+if not erros_carregamento.empty:
+
+    with st.expander(
+        "Erros de carregamento"
+    ):
+
+        st.dataframe(
+            erros_carregamento,
+            use_container_width=True,
+            hide_index=True
+        )
 
 
 # ============================================================
@@ -4444,7 +4256,13 @@ with st.expander(
 ):
 
     st.write(
-        f"Total de equipes: **{total_equipes}**"
+        f"Distribuidora: "
+        f"**{distribuidora_selecionada}**"
+    )
+
+    st.write(
+        f"Total de equipes: "
+        f"**{total_equipes}**"
     )
 
     st.write(
@@ -4468,17 +4286,17 @@ with st.expander(
     )
 
     st.write(
-        f"Equipes sem contato no semestre: "
+        f"Sem contato no semestre: "
         f"**{equipes_sem_contato_semestre}**"
     )
 
     st.write(
-        f"Líderes/Gerentes distintos: "
+        f"Líderes/Gerentes: "
         f"**{total_lideres}**"
     )
 
     st.write(
-        f"Inspetores distintos: "
+        f"Inspetores: "
         f"**{total_inspetores}**"
     )
 
@@ -4493,7 +4311,7 @@ with st.expander(
     )
 
     st.write(
-        f"Inspeções com não conformidade: "
+        f"Inspeções com NC: "
         f"**{total_nao_conformes}**"
     )
 
