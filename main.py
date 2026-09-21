@@ -33,6 +33,7 @@ DISTRIBUIDORAS = {
     "PI": "Piauí",
     "RS": "Rio Grande do Sul",
     "PA": "Pará",
+<<<<<<< HEAD
 }
 
 
@@ -80,7 +81,55 @@ ORIGENS_EXCLUIDAS = {
     "PPCR",
     "CIPA",
     "Não informado",
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 }
+
+
+# ============================================================
+# META DE LIDERANÇA
+# ============================================================
+
+# Por enquanto apenas AL possui meta informada.
+#
+# Quando tiver as demais:
+#
+# "AP": XX,
+# "GO": XX,
+# etc.
+
+META_LIDERES = {
+    "AL": 44,
+}
+
+
+# ============================================================
+# META DA TAXA DE CONTATO
+# ============================================================
+
+META_TAXA_CONTATO = 1.00
+
+
+# ============================================================
+# TIPOS DE LIDERANÇA
+# ============================================================
+
+TIPOS_LIDERANCA = [
+    "Líder",
+    "Gerente",
+    "Executivo",
+    "Superintendente",
+]
+
+
+# ============================================================
+# ORIGENS QUE NÃO DEVEM ENTRAR NO RECORTE
+# ============================================================
+
+ORIGENS_EXCLUIDAS = [
+    "PPCR",
+    "CIPA",
+]
 
 
 # ============================================================
@@ -187,12 +236,19 @@ def normalizar_id(serie):
 
 
 # ============================================================
+<<<<<<< HEAD
 # IDENTIFICAÇÃO DA DISTRIBUIDORA
 # ============================================================
 
 def identificar_distribuidora(
     nome_arquivo
 ):
+=======
+# IDENTIFICA DISTRIBUIDORA PELO NOME DO ARQUIVO
+# ============================================================
+
+def identificar_distribuidora(nome_arquivo):
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
     nome = (
         Path(nome_arquivo)
@@ -223,7 +279,11 @@ def identificar_distribuidora(
 
 
 # ============================================================
+<<<<<<< HEAD
 # PADRONIZAÇÃO DA ORIGEM
+=======
+# PADRONIZAÇÃO DE ORIGEM
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 def padronizar_origem(valor):
@@ -233,7 +293,10 @@ def padronizar_origem(valor):
     )
 
     if not texto:
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         return "Não informado"
 
 
@@ -271,7 +334,15 @@ def padronizar_origem(valor):
         return "CIPA"
 
 
+<<<<<<< HEAD
     return "Outras"
+=======
+    return (
+        str(valor)
+        .strip()
+        .title()
+    )
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 
 # ============================================================
@@ -284,12 +355,17 @@ def classificar_tipo_lideranca(cargo):
         cargo
     )
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     if not texto:
 
         return None
 
 
     # --------------------------------------------------------
+<<<<<<< HEAD
     # TÉCNICO DE DISTRIBUIÇÃO
     # --------------------------------------------------------
 
@@ -318,6 +394,8 @@ def classificar_tipo_lideranca(cargo):
 
 
     # --------------------------------------------------------
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     # SUPERINTENDENTE
     # --------------------------------------------------------
 
@@ -380,7 +458,11 @@ def classificar_tipo_lideranca(cargo):
 
 
 # ============================================================
+<<<<<<< HEAD
 # CLASSIFICAÇÃO DOS NÃO LÍDERES
+=======
+# PADRONIZAÇÃO DOS NÃO LÍDERES
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 def classificar_nao_lider(cargo):
@@ -389,17 +471,29 @@ def classificar_nao_lider(cargo):
         cargo
     )
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     if not texto:
 
         return None
 
 
+<<<<<<< HEAD
     # Se for liderança, não entra nesta visão.
 
     if (
         classificar_tipo_lideranca(
             cargo
         )
+=======
+    # Se já foi classificado como liderança,
+    # não pode entrar em não líderes.
+
+    if (
+        classificar_tipo_lideranca(cargo)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         is not None
     ):
 
@@ -407,7 +501,11 @@ def classificar_nao_lider(cargo):
 
 
     # --------------------------------------------------------
+<<<<<<< HEAD
     # TÉCNICO DE SEGURANÇA
+=======
+    # TÉCNICO SEGURANÇA
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     # --------------------------------------------------------
 
     if (
@@ -423,6 +521,7 @@ def classificar_nao_lider(cargo):
 
 
     # --------------------------------------------------------
+<<<<<<< HEAD
     # TÉCNICO DE OPERAÇÃO
     # --------------------------------------------------------
 
@@ -467,6 +566,61 @@ def classificar_nao_lider(cargo):
             "Técnico de Projetos "
             "e Obras"
         )
+=======
+    # TÉCNICO DISTRIBUIÇÃO
+    # --------------------------------------------------------
+
+    if "DISTRIBUICAO" in texto:
+
+        if (
+            "TEC" in texto
+            or
+            "TECNICO" in texto
+        ):
+
+            return (
+                "Técnico de Distribuição"
+            )
+
+
+    # --------------------------------------------------------
+    # TÉCNICO OPERAÇÃO
+    # --------------------------------------------------------
+
+    if "OPERACAO" in texto:
+
+        if (
+            "TEC" in texto
+            or
+            "TECNICO" in texto
+        ):
+
+            return (
+                "Técnico de Operação"
+            )
+
+
+    # --------------------------------------------------------
+    # PROJETOS / OBRAS
+    # --------------------------------------------------------
+
+    if (
+        "PROJET" in texto
+        or
+        "OBRA" in texto
+    ):
+
+        if (
+            "TEC" in texto
+            or
+            "TECNICO" in texto
+        ):
+
+            return (
+                "Técnico de Projetos "
+                "e Obras"
+            )
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 
     # --------------------------------------------------------
@@ -513,6 +667,7 @@ def classificar_nao_lider(cargo):
 
 
     # --------------------------------------------------------
+<<<<<<< HEAD
     # COORDENADOR
     # --------------------------------------------------------
 
@@ -531,6 +686,8 @@ def classificar_nao_lider(cargo):
 
 
     # --------------------------------------------------------
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     # ASSISTENTE
     # --------------------------------------------------------
 
@@ -548,11 +705,49 @@ def classificar_nao_lider(cargo):
         return "Trainee"
 
 
+<<<<<<< HEAD
+=======
+    # --------------------------------------------------------
+    # CIPEIRO
+    # --------------------------------------------------------
+
+    if (
+        "CIPEIR" in texto
+        or
+        "CIPA" in texto
+    ):
+
+        return "Cipeiro"
+
+
+    # --------------------------------------------------------
+    # COORDENADOR
+    # --------------------------------------------------------
+
+    if "COORDEN" in texto:
+
+        return "Coordenador"
+
+
+    # --------------------------------------------------------
+    # SUPERVISOR
+    # --------------------------------------------------------
+
+    if "SUPERVIS" in texto:
+
+        return "Supervisor"
+
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     return "Outros"
 
 
 # ============================================================
+<<<<<<< HEAD
 # CARREGAMENTO DAS BASES ESS
+=======
+# CARREGAMENTO DAS BASES
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 @st.cache_data
@@ -646,6 +841,7 @@ def carregar_bases(caminhos):
         pd.DataFrame(
             erros
         )
+<<<<<<< HEAD
     )
 
 
@@ -721,6 +917,11 @@ def resumo_inspecoes(base):
     }
 
 
+=======
+    )
+
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 # COMPONENTES VISUAIS
 # ============================================================
@@ -854,12 +1055,25 @@ def aplicar_layout_plotly(
 # IMAGENS
 # ============================================================
 
+<<<<<<< HEAD
 logo_jornada_b64 = imagem_base64(
     LOGO_JORNADA
 )
 
 logo_eqtl_b64 = imagem_base64(
     LOGO_EQTL
+=======
+logo_jornada_b64 = (
+    imagem_base64(
+        LOGO_JORNADA
+    )
+)
+
+logo_eqtl_b64 = (
+    imagem_base64(
+        LOGO_EQTL
+    )
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
@@ -875,29 +1089,46 @@ st.html(
         'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap'
     );
 
+<<<<<<< HEAD
 
     html,
     body,
     [class*="css"] {{
 
+=======
+    html,
+    body,
+    [class*="css"] {{
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         font-family:
             'Montserrat',
             'Segoe UI',
             sans-serif;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .stApp {{
+<<<<<<< HEAD
 
         background:
             {CINZA_FUNDO};
 
+=======
+        background:
+            {CINZA_FUNDO};
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .block-container {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         padding-top:
             1.5rem;
 
@@ -906,7 +1137,10 @@ st.html(
 
         max-width:
             1500px;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
@@ -915,48 +1149,74 @@ st.html(
     ======================================================= */
 
     [data-testid="stSidebar"] {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         background:
             linear-gradient(
                 180deg,
                 {AZUL_ESCURO} 0%,
                 {AZUL_EQTL} 100%
             );
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     [data-testid="stSidebar"] * {{
+<<<<<<< HEAD
 
         color:
             white;
 
+=======
+        color:
+            white;
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     [data-testid="stSidebar"] label {{
+<<<<<<< HEAD
 
         font-weight:
             600;
 
+=======
+        font-weight:
+            600;
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     [data-testid="stSidebar"]
     [data-baseweb="select"] > div {{
+<<<<<<< HEAD
 
         background:
             white;
 
+=======
+        background:
+            white;
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     [data-testid="stSidebar"]
     [data-baseweb="select"] span {{
+<<<<<<< HEAD
 
         color:
             {AZUL_ESCURO};
 
+=======
+        color:
+            {AZUL_ESCURO};
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
@@ -965,7 +1225,10 @@ st.html(
     ======================================================= */
 
     .hero {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         background:
             linear-gradient(
                 120deg,
@@ -981,7 +1244,11 @@ st.html(
             42px 44px;
 
         margin-bottom:
+<<<<<<< HEAD
             18px;
+=======
+            32px;
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
         box-shadow:
             0 14px 32px
@@ -997,12 +1264,18 @@ st.html(
 
         overflow:
             hidden;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero::after {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         content:
             "";
 
@@ -1031,12 +1304,18 @@ st.html(
 
         top:
             -165px;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-grid {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         display:
             flex;
 
@@ -1054,20 +1333,31 @@ st.html(
 
         z-index:
             2;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-text {{
+<<<<<<< HEAD
 
         flex:
             1;
 
+=======
+        flex:
+            1;
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-tag {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         display:
             inline-block;
 
@@ -1091,12 +1381,18 @@ st.html(
 
         margin-bottom:
             16px;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-title {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         color:
             white;
 
@@ -1111,26 +1407,41 @@ st.html(
 
         margin:
             0;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-title-highlight {{
+<<<<<<< HEAD
 
         color:
             {AMARELO};
 
+=======
+        color:
+            {AMARELO};
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-subtitle {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         color:
             rgba(
                 255,
                 255,
                 255,
+<<<<<<< HEAD
                 .90
+=======
+                .88
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             );
 
         font-size:
@@ -1147,6 +1458,7 @@ st.html(
 
         line-height:
             1.5;
+<<<<<<< HEAD
 
     }}
 
@@ -1246,6 +1558,8 @@ st.html(
         font-weight:
             500;
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
@@ -1254,7 +1568,10 @@ st.html(
     ======================================================= */
 
     .hero-logo-container {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         min-width:
             300px;
 
@@ -1266,12 +1583,18 @@ st.html(
 
         justify-content:
             center;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-logo-box {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         background:
             rgba(
                 255,
@@ -1295,11 +1618,25 @@ st.html(
         padding:
             12px;
 
+<<<<<<< HEAD
+=======
+        box-shadow:
+            0 10px 28px
+            rgba(
+                0,
+                0,
+                0,
+                .08
+            );
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-logo-inner {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         background:
             rgba(
                 255,
@@ -1322,12 +1659,18 @@ st.html(
 
         justify-content:
             center;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .hero-logo {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         width:
             265px;
 
@@ -1336,16 +1679,26 @@ st.html(
 
         object-fit:
             contain;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     /* =======================================================
+<<<<<<< HEAD
        SEÇÕES
     ======================================================= */
 
     .section-title {{
 
+=======
+       SECTION
+    ======================================================= */
+
+    .section-title {{
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         border-left:
             6px solid
             {AMARELO};
@@ -1354,16 +1707,26 @@ st.html(
             14px;
 
         margin-top:
+<<<<<<< HEAD
             32px;
 
         margin-bottom:
             18px;
 
+=======
+            30px;
+
+        margin-bottom:
+            18px;
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .section-title h2 {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         color:
             {AZUL_ESCURO};
 
@@ -1375,12 +1738,18 @@ st.html(
 
         margin:
             0;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .section-title p {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         color:
             {CINZA_TEXTO};
 
@@ -1389,7 +1758,10 @@ st.html(
 
         margin:
             5px 0 0 0;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
@@ -1398,7 +1770,10 @@ st.html(
     ======================================================= */
 
     .kpi-card {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         background:
             {BRANCO};
 
@@ -1429,12 +1804,18 @@ st.html(
 
         overflow:
             hidden;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .kpi-card::before {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         content:
             "";
 
@@ -1455,12 +1836,18 @@ st.html(
 
         background:
             var(--accent);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .kpi-label {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         color:
             {CINZA_TEXTO};
 
@@ -1475,12 +1862,18 @@ st.html(
 
         margin-bottom:
             8px;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .kpi-value {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         color:
             {AZUL_ESCURO};
 
@@ -1492,12 +1885,18 @@ st.html(
 
         margin-bottom:
             9px;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     .kpi-subtitle {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         color:
             {CINZA_TEXTO};
 
@@ -1509,16 +1908,26 @@ st.html(
 
         line-height:
             1.4;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
     /* =======================================================
+<<<<<<< HEAD
        BOXES
     ======================================================= */
 
     .warning-box {{
 
+=======
+       ALERTA
+    ======================================================= */
+
+    .warning-box {{
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         background:
             #FFF8E5;
 
@@ -1547,6 +1956,7 @@ st.html(
 
         margin:
             15px 0;
+<<<<<<< HEAD
 
     }}
 
@@ -1582,6 +1992,8 @@ st.html(
         margin:
             15px 0;
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
@@ -1590,7 +2002,10 @@ st.html(
     ======================================================= */
 
     [data-testid="stDataFrame"] {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         background:
             white;
 
@@ -1603,7 +2018,10 @@ st.html(
 
         overflow:
             hidden;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     }}
 
 
@@ -1614,31 +2032,46 @@ st.html(
     @media (max-width: 900px) {{
 
         .hero-grid {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             flex-direction:
                 column;
 
             align-items:
                 flex-start;
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         }}
 
 
         .hero-title {{
+<<<<<<< HEAD
 
             font-size:
                 34px;
 
+=======
+            font-size:
+                34px;
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         }}
 
 
         .hero-logo-container {{
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             min-width:
                 0;
 
             width:
                 100%;
+<<<<<<< HEAD
 
         }}
 
@@ -1651,6 +2084,8 @@ st.html(
             flex-direction:
                 column;
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         }}
 
     }}
@@ -1714,9 +2149,14 @@ st.html(
 
                 <p class="hero-subtitle">
 
+<<<<<<< HEAD
                     PMS • Meta de 100% das equipes
                     com contato da liderança
                     em cada ciclo de 3 meses.
+=======
+                    Meta: 100% das equipes com contato
+                    da liderança dentro de cada ciclo de 3 meses.
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
                 </p>
 
@@ -1732,6 +2172,7 @@ st.html(
 
 
 # ============================================================
+<<<<<<< HEAD
 # DESTAQUE DA FONTE ESS
 # ============================================================
 
@@ -1762,13 +2203,20 @@ st.html(
 
 # ============================================================
 # LOCALIZA OS ARQUIVOS ESS
+=======
+# LOCALIZA ARQUIVOS
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 if not PASTA_BASE.exists():
 
     st.error(
         "A pasta `base` não foi encontrada "
+<<<<<<< HEAD
         "ao lado do app.py."
+=======
+        "ao lado do arquivo app.py."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
     st.stop()
@@ -1793,7 +2241,11 @@ arquivos_excel = sorted(
 if not arquivos_excel:
 
     st.error(
+<<<<<<< HEAD
         "Nenhum arquivo ESS `.xlsx` foi encontrado "
+=======
+        "Nenhum arquivo `.xlsx` foi encontrado "
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         "na pasta `base`."
     )
 
@@ -1801,6 +2253,7 @@ if not arquivos_excel:
 
 
 # ============================================================
+<<<<<<< HEAD
 # CARREGAMENTO DAS BASES ESS
 # ============================================================
 
@@ -1811,6 +2264,21 @@ df, erros_carregamento = (
             for arquivo
             in arquivos_excel
         ]
+=======
+# CARREGA BASES
+# ============================================================
+
+caminhos = [
+    str(arquivo)
+    for arquivo
+    in arquivos_excel
+]
+
+
+df, erros_carregamento = (
+    carregar_bases(
+        caminhos
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
@@ -1818,6 +2286,7 @@ df, erros_carregamento = (
 if df.empty:
 
     st.error(
+<<<<<<< HEAD
         "Nenhuma base ESS pôde ser carregada."
     )
 
@@ -1857,6 +2326,9 @@ if colunas_faltantes:
         ", ".join(
             colunas_faltantes
         )
+=======
+        "Nenhuma base pôde ser carregada."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
     st.stop()
@@ -1898,6 +2370,26 @@ df[
 
 
 df[
+<<<<<<< HEAD
+=======
+    "Cargo Normalizado"
+] = (
+    df[
+        "Cargo"
+    ]
+    .fillna("")
+    .apply(
+        normalizar_texto
+    )
+)
+
+
+# ============================================================
+# CLASSIFICA LIDERANÇA
+# ============================================================
+
+df[
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     "Tipo de Liderança"
 ] = (
     df[
@@ -1919,6 +2411,13 @@ df[
 )
 
 
+<<<<<<< HEAD
+=======
+# ============================================================
+# CLASSIFICA NÃO LÍDER
+# ============================================================
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 df[
     "Perfil Não Líder"
 ] = (
@@ -1931,6 +2430,13 @@ df[
 )
 
 
+<<<<<<< HEAD
+=======
+# ============================================================
+# CONFORMIDADE
+# ============================================================
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 df[
     "Conformidade Normalizada"
 ] = (
@@ -1944,6 +2450,13 @@ df[
 )
 
 
+<<<<<<< HEAD
+=======
+# ============================================================
+# ORIGEM
+# ============================================================
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 df[
     "Origem Padronizada"
 ] = (
@@ -1956,6 +2469,13 @@ df[
 )
 
 
+<<<<<<< HEAD
+=======
+# ============================================================
+# CHAVE ÚNICA DA EQUIPE
+# ============================================================
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 df[
     "Chave Equipe"
 ] = (
@@ -2032,7 +2552,11 @@ distribuidoras_presentes = set(
 
 distribuidoras_disponiveis = [
     nome
+<<<<<<< HEAD
     for _, nome
+=======
+    for sigla, nome
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     in DISTRIBUIDORAS.items()
     if nome
     in distribuidoras_presentes
@@ -2135,6 +2659,7 @@ df_periodo = (
                 1,
                 6
             )
+<<<<<<< HEAD
         )
     ]
     .copy()
@@ -2145,12 +2670,79 @@ if df_periodo.empty:
 
     st.warning(
         "Não há registros ESS no período selecionado."
+=======
+        )
+    ]
+    .copy()
+)
+
+
+# ============================================================
+# ORIGENS
+# ============================================================
+
+origens_encontradas = sorted(
+    df_periodo[
+        "Origem Padronizada"
+    ]
+    .dropna()
+    .unique()
+)
+
+
+origens_excluidas_normalizadas = [
+    normalizar_texto(
+        origem
+    )
+    for origem
+    in ORIGENS_EXCLUIDAS
+]
+
+
+origens_disponiveis = [
+    origem
+    for origem
+    in origens_encontradas
+    if (
+        normalizar_texto(
+            origem
+        )
+        not in
+        origens_excluidas_normalizadas
+        and
+        origem
+        !=
+        "Não informado"
+    )
+]
+
+
+origens_selecionadas = (
+    st.sidebar.multiselect(
+        "Origem",
+        origens_disponiveis,
+        default=
+            origens_disponiveis,
+        help=(
+            "PPCR e CIPA são retirados "
+            "do recorte principal."
+        )
+    )
+)
+
+
+if not origens_selecionadas:
+
+    st.warning(
+        "Selecione pelo menos uma origem."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
     st.stop()
 
 
 # ============================================================
+<<<<<<< HEAD
 # UNIVERSO DE EQUIPES
 # ============================================================
 #
@@ -2158,6 +2750,17 @@ if df_periodo.empty:
 #
 # Dessa forma, uma equipe sem PMS continua
 # aparecendo no denominador da taxa de contato.
+=======
+# UNIVERSO DAS EQUIPES
+# ============================================================
+#
+# IMPORTANTE:
+#
+# Criado ANTES do filtro de origem.
+#
+# Assim não diminuímos artificialmente
+# o denominador da Taxa de Contato.
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 cadastro_equipes = (
@@ -2200,6 +2803,7 @@ if total_equipes == 0:
 
 
 # ============================================================
+<<<<<<< HEAD
 # BASE DE CONTEXTO
 # ============================================================
 
@@ -2211,12 +2815,91 @@ df_contexto = (
         .isin(
             ORIGENS_EXCLUIDAS
         )
+=======
+# BASE OPERACIONAL
+# ============================================================
+
+df_operacional = (
+    df_periodo[
+        df_periodo[
+            "Origem Padronizada"
+        ]
+        .isin(
+            origens_selecionadas
+        )
     ]
     .copy()
 )
 
 
 # ============================================================
+# MÊS
+# ============================================================
+
+meses = {
+    1: "Janeiro",
+    2: "Fevereiro",
+    3: "Março",
+    4: "Abril",
+    5: "Maio",
+    6: "Junho",
+}
+
+
+ordem_meses = list(
+    meses.values()
+)
+
+
+df_operacional[
+    "Mês Número"
+] = (
+    df_operacional[
+        "Data de Execução"
+    ]
+    .dt.month
+)
+
+
+df_operacional[
+    "Mês"
+] = (
+    df_operacional[
+        "Mês Número"
+    ]
+    .map(
+        meses
+    )
+)
+
+
+# ============================================================
+# LIDERANÇA X NÃO LIDERANÇA
+# ============================================================
+
+df_lideranca = (
+    df_operacional[
+        df_operacional[
+            "É Liderança"
+        ]
+    ]
+    .copy()
+)
+
+
+df_nao_lider = (
+    df_operacional[
+        ~df_operacional[
+            "É Liderança"
+        ]
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
+    ]
+    .copy()
+)
+
+
+# ============================================================
+<<<<<<< HEAD
 # BASE PRINCIPAL - PMS
 # ============================================================
 
@@ -2230,6 +2913,93 @@ df_pms = (
     ]
     .copy()
 )
+=======
+# LIMPEZA DOS NÃO LÍDERES
+# ============================================================
+
+df_nao_lider = (
+    df_nao_lider[
+        df_nao_lider[
+            "Perfil Não Líder"
+        ]
+        .notna()
+        &
+        df_nao_lider[
+            "Inspetor"
+        ]
+        .notna()
+    ]
+    .copy()
+)
+
+
+# ============================================================
+# META DE LIDERANÇA
+# ============================================================
+#
+# CORREÇÃO DO ERRO DO PYLANCE.
+#
+# Antes:
+#
+# META_LIDERES.get(sigla)
+#
+# podia retornar None.
+#
+# Agora "metas_encontradas" contém SOMENTE int.
+# ============================================================
+
+siglas_no_recorte = sorted(
+    df_periodo[
+        "Sigla Distribuidora"
+    ]
+    .dropna()
+    .unique()
+)
+
+
+metas_encontradas = [
+    META_LIDERES[
+        sigla
+    ]
+    for sigla
+    in siglas_no_recorte
+    if sigla
+    in META_LIDERES
+]
+
+
+if (
+    len(siglas_no_recorte)
+    == 1
+    and
+    siglas_no_recorte[0]
+    in META_LIDERES
+):
+
+    meta_lideres = (
+        META_LIDERES[
+            siglas_no_recorte[0]
+        ]
+    )
+
+
+elif (
+    len(siglas_no_recorte) > 0
+    and
+    len(metas_encontradas)
+    ==
+    len(siglas_no_recorte)
+):
+
+    meta_lideres = sum(
+        metas_encontradas
+    )
+
+
+else:
+
+    meta_lideres = None
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 
 # ============================================================
@@ -2366,6 +3136,7 @@ siglas_no_recorte = sorted(
 )
 
 
+<<<<<<< HEAD
 metas_encontradas = [
     META_LIDERES[
         sigla
@@ -2474,6 +3245,38 @@ else:
             ],
             fill_value=0
         )
+=======
+# ============================================================
+# INCLUI EQUIPES QUE NÃO RECEBERAM CONTATO
+# ============================================================
+
+inspecoes_equipe_mes = (
+    inspecoes_equipe_mes
+    .reindex(
+        index=
+            todas_equipes,
+        fill_value=0
+    )
+)
+
+
+# ============================================================
+# GARANTE OS 6 MESES
+# ============================================================
+
+inspecoes_equipe_mes = (
+    inspecoes_equipe_mes
+    .reindex(
+        columns=[
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+        ],
+        fill_value=0
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
@@ -2483,7 +3286,11 @@ inspecoes_equipe_mes.columns = (
 
 
 # ============================================================
+<<<<<<< HEAD
 # COBERTURA
+=======
+# HOUVE CONTATO?
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 teve_contato = (
@@ -2493,7 +3300,15 @@ teve_contato = (
 )
 
 
+<<<<<<< HEAD
 contato_t1 = (
+=======
+# ============================================================
+# T1
+# ============================================================
+
+contato_t1_equipe = (
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     teve_contato[
         [
             "Janeiro",
@@ -2507,7 +3322,15 @@ contato_t1 = (
 )
 
 
+<<<<<<< HEAD
 contato_t2 = (
+=======
+# ============================================================
+# T2
+# ============================================================
+
+contato_t2_equipe = (
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     teve_contato[
         [
             "Abril",
@@ -2521,7 +3344,15 @@ contato_t2 = (
 )
 
 
+<<<<<<< HEAD
 contato_semestre = (
+=======
+# ============================================================
+# SEMESTRE
+# ============================================================
+
+contato_semestre_equipe = (
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     teve_contato
     .any(
         axis=1
@@ -2530,7 +3361,11 @@ contato_semestre = (
 
 
 # ============================================================
+<<<<<<< HEAD
 # TAXA DE CONTATO
+=======
+# CÁLCULOS
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 equipes_contato_t1 = int(
@@ -2571,18 +3406,27 @@ taxa_t2 = (
 )
 
 
+<<<<<<< HEAD
 gap_t1 = (
+=======
+gap_t1_pp = (
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     META_TAXA_CONTATO
     -
     taxa_t1
 ) * 100
 
 
+<<<<<<< HEAD
 gap_t2 = (
+=======
+gap_t2_pp = (
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     META_TAXA_CONTATO
     -
     taxa_t2
 ) * 100
+<<<<<<< HEAD
 
 
 # ============================================================
@@ -2801,6 +3645,117 @@ lideres_mensais = (
         lideres_mensais
     )
 )
+=======
+
+
+# ============================================================
+# QUANTIDADE POR TIPO DE LIDERANÇA
+# ============================================================
+
+lideres_por_tipo = (
+    df_lideranca
+    .groupby(
+        "Tipo de Liderança"
+    )[
+        "Inspetor"
+    ]
+    .nunique()
+    .reindex(
+        TIPOS_LIDERANCA,
+        fill_value=0
+    )
+    .reset_index()
+)
+
+
+lideres_por_tipo.columns = [
+    "Tipo de liderança",
+    "Quantidade de líderes"
+]
+
+
+# ============================================================
+# INSPEÇÕES POR TIPO DE LIDERANÇA
+# ============================================================
+
+inspecoes_por_tipo_lider = (
+    df_lideranca
+    .groupby(
+        "Tipo de Liderança"
+    )[
+        "Inspeção"
+    ]
+    .nunique()
+    .reindex(
+        TIPOS_LIDERANCA,
+        fill_value=0
+    )
+    .reset_index()
+)
+
+
+inspecoes_por_tipo_lider.columns = [
+    "Tipo de liderança",
+    "Inspeções distintas"
+]
+
+
+lideres_por_tipo = (
+    lideres_por_tipo
+    .merge(
+        inspecoes_por_tipo_lider,
+        on=
+            "Tipo de liderança",
+        how=
+            "left"
+    )
+)
+
+
+# ============================================================
+# LIDERANÇAS ATIVAS
+# ============================================================
+
+lideres_ativos_semestre = (
+    df_lideranca[
+        "Inspetor"
+    ]
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .replace(
+        "",
+        pd.NA
+    )
+    .dropna()
+    .nunique()
+)
+
+
+total_inspecoes_lideranca = (
+    df_lideranca[
+        "Inspeção"
+    ]
+    .nunique()
+)
+
+
+if (
+    meta_lideres is not None
+    and
+    meta_lideres > 0
+):
+
+    aderencia_lideres = (
+        lideres_ativos_semestre
+        /
+        meta_lideres
+    )
+
+else:
+
+    aderencia_lideres = None
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 
 # ============================================================
@@ -2833,6 +3788,7 @@ resumo_cobertura_mensal = []
 
 for numero_mes, nome_mes in meses.items():
 
+
     com_contato = int(
         teve_contato[
             nome_mes
@@ -2862,6 +3818,7 @@ for numero_mes, nome_mes in meses.items():
     )
 
 
+<<<<<<< HEAD
 resumo_cobertura_mensal = (
     pd.DataFrame(
         resumo_cobertura_mensal
@@ -2885,8 +3842,33 @@ inspecoes_origem = (
         subset=[
             "Inspeção",
             "Chave Equipe"
+=======
+    base_mes = (
+        df_lideranca[
+            df_lideranca[
+                "Mês Número"
+            ]
+            ==
+            numero_mes
         ]
     )
+
+
+    inspecoes_distintas = (
+        base_mes[
+            "Inspeção"
+        ]
+        .nunique()
+    )
+
+
+    lideres_ativos = (
+        base_mes[
+            "Inspetor"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
+        ]
+    )
+<<<<<<< HEAD
     .drop_duplicates()
 )
 
@@ -2939,10 +3921,122 @@ inspecoes_por_origem = (
     inspecoes_por_origem
     .sort_values(
         "Ordem"
+=======
+
+
+    if (
+        meta_lideres is not None
+        and
+        meta_lideres > 0
+    ):
+
+        presenca_lideres = (
+            lideres_ativos
+            /
+            meta_lideres
+        )
+
+    else:
+
+        presenca_lideres = None
+
+
+    resumo_mensal.append(
+        {
+            "Trimestre":
+                "T1"
+                if numero_mes <= 3
+                else "T2",
+
+            "Mês":
+                nome_mes,
+
+            "Com contato":
+                com_contato,
+
+            "Sem contato":
+                sem_contato,
+
+            "Taxa de contato":
+                taxa,
+
+            "Inspeções distintas":
+                inspecoes_distintas,
+
+            "Líderes ativos":
+                lideres_ativos,
+
+            "Presença de líderes":
+                presenca_lideres,
+        }
+    )
+
+
+resumo_mensal = pd.DataFrame(
+    resumo_mensal
+)
+
+
+# ============================================================
+# NÃO LÍDERES
+# ============================================================
+
+total_inspetores_nao_lideres = (
+    df_nao_lider[
+        "Inspetor"
+    ]
+    .dropna()
+    .astype(str)
+    .str.strip()
+    .replace(
+        "",
+        pd.NA
+    )
+    .dropna()
+    .nunique()
+)
+
+
+total_inspecoes_nao_lideres = (
+    df_nao_lider[
+        "Inspeção"
+    ]
+    .nunique()
+)
+
+
+nao_lideres_resumo = (
+    df_nao_lider
+    .groupby(
+        "Perfil Não Líder"
+    )
+    .agg(
+
+        Inspetores=(
+            "Inspetor",
+            "nunique"
+        ),
+
+        Inspeções=(
+            "Inspeção",
+            "nunique"
+        ),
+
+        Equipes=(
+            "Chave Equipe",
+            "nunique"
+        ),
+    )
+    .reset_index()
+    .sort_values(
+        "Inspetores",
+        ascending=False
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
+<<<<<<< HEAD
 total_inspecoes_contexto = len(
     inspecoes_origem
 )
@@ -3013,10 +4107,13 @@ nao_lideres_resumo = (
 )
 
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
-# CONFORMIDADES
+# CONFORMIDADE POR INSPEÇÃO
 # ============================================================
 
+<<<<<<< HEAD
 if df_pms_lideranca.empty:
 
     status_inspecoes = (
@@ -3030,6 +4127,34 @@ if df_pms_lideranca.empty:
                 "Mês Número",
                 "Mês",
             ]
+=======
+status_inspecoes = (
+    df_lideranca
+    .groupby(
+        [
+            "Inspeção",
+            "Chave Equipe"
+        ],
+        as_index=False
+    )
+    .agg(
+
+        Data=(
+            "Data de Execução",
+            "min"
+        ),
+
+        Possui_NC=(
+            "Conformidade Normalizada",
+
+            lambda valores:
+                (
+                    valores
+                    ==
+                    "NAO CONFORME"
+                )
+                .any()
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         )
     )
 
@@ -3094,6 +4219,7 @@ else:
     )
 
 
+<<<<<<< HEAD
     status_inspecoes[
         "Mês"
     ] = (
@@ -3105,6 +4231,11 @@ else:
         )
     )
 
+=======
+# ============================================================
+# MÉTRICAS DE CONFORMIDADE
+# ============================================================
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 total_inspecoes_analisadas = len(
     status_inspecoes
@@ -3195,6 +4326,7 @@ if (
     )
 
 
+<<<<<<< HEAD
     chaves_nc = [
         coluna
         for coluna
@@ -3203,24 +4335,42 @@ if (
             "Chave Equipe",
             "Membro",
             "Não Conformidade",
+=======
+    colunas_chave_nc = [
+        coluna
+        for coluna in [
+            "Inspeção",
+            "Chave Equipe",
+            "Membro",
+            "Não Conformidade"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         ]
         if coluna
         in nc_detalhe.columns
     ]
 
 
+<<<<<<< HEAD
     if chaves_nc:
+=======
+    if colunas_chave_nc:
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
         nc_detalhe = (
             nc_detalhe
             .drop_duplicates(
                 subset=
+<<<<<<< HEAD
                     chaves_nc
+=======
+                    colunas_chave_nc
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             )
         )
 
 
 # ============================================================
+<<<<<<< HEAD
 # 1. OPERAÇÃO SEGURA - PMS
 # ============================================================
 
@@ -3229,18 +4379,33 @@ titulo_secao(
     (
         "Indicadores calculados a partir dos registros "
         "do ESS com origem PMS."
+=======
+# OBJETIVO CENTRAL
+# ============================================================
+
+titulo_secao(
+    "Objetivo central",
+    (
+        "Verificar se 100% das equipes receberam pelo menos "
+        "um contato da liderança em cada ciclo de 3 meses."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
 st.html(
+<<<<<<< HEAD
     """
+=======
+    f"""
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     <div class="warning-box">
 
         <strong>
             Regra da Taxa de Contato:
         </strong>
 
+<<<<<<< HEAD
         100% das equipes devem receber pelo menos um contato
         da liderança dentro de cada ciclo de três meses.
 
@@ -3248,6 +4413,24 @@ st.html(
 
         Uma equipe que recebeu várias inspeções continua
         representando somente uma equipe coberta.
+=======
+        cada equipe precisa receber pelo menos um contato
+        da liderança no T1 (janeiro a março) e novamente
+        no T2 (abril a junho).
+
+        <br><br>
+
+        Uma equipe com várias inspeções continua representando
+        apenas uma equipe coberta na Taxa de Contato.
+
+        <br><br>
+
+        <strong>
+            Origens consideradas:
+        </strong>
+
+        {', '.join(origens_selecionadas)}
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
     </div>
     """
@@ -3255,12 +4438,19 @@ st.html(
 
 
 # ============================================================
+<<<<<<< HEAD
 # TAXA DE CONTATO
 # ============================================================
 
 c1, c2, c3, c4 = st.columns(
     4
 )
+=======
+# CARDS PRINCIPAIS
+# ============================================================
+
+c1, c2, c3, c4 = st.columns(4)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 
 with c1:
@@ -3268,7 +4458,11 @@ with c1:
     card_kpi(
         "Meta trimestral",
         "100%",
+<<<<<<< HEAD
         "equipes com contato em até 3 meses",
+=======
+        "das equipes em até 3 meses",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         AMARELO
     )
 
@@ -3279,8 +4473,13 @@ with c2:
         "Taxa de Contato T1",
         f"{taxa_t1:.1%}",
         (
+<<<<<<< HEAD
             f"{equipes_sem_contato_t1} "
             f"equipes ainda sem contato"
+=======
+            f"{equipes_sem_contato_t1} equipes pendentes"
+            f" • gap {gap_t1_pp:.1f} p.p."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         ),
         LARANJA
     )
@@ -3292,8 +4491,13 @@ with c3:
         "Taxa de Contato T2",
         f"{taxa_t2:.1%}",
         (
+<<<<<<< HEAD
             f"{equipes_sem_contato_t2} "
             f"equipes ainda sem contato"
+=======
+            f"{equipes_sem_contato_t2} equipes pendentes"
+            f" • gap {gap_t2_pp:.1f} p.p."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         ),
         LARANJA
     )
@@ -3302,9 +4506,15 @@ with c3:
 with c4:
 
     card_kpi(
+<<<<<<< HEAD
         "Equipes no universo",
         total_equipes,
         "equipes identificadas na base ESS",
+=======
+        "Total de equipes",
+        total_equipes,
+        "universo do indicador",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         AZUL_PRINCIPAL
     )
 
@@ -3313,12 +4523,31 @@ with c4:
 # TAXA X META
 # ============================================================
 
+<<<<<<< HEAD
+=======
+comparativo_meta = pd.DataFrame(
+    {
+        "Trimestre": [
+            "T1",
+            "T2"
+        ],
+
+        "Taxa": [
+            taxa_t1 * 100,
+            taxa_t2 * 100
+        ],
+    }
+)
+
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 fig_meta = go.Figure()
 
 
 fig_meta.add_trace(
     go.Bar(
 
+<<<<<<< HEAD
         x=[
             "T1",
             "T2"
@@ -3328,6 +4557,17 @@ fig_meta.add_trace(
             taxa_t1 * 100,
             taxa_t2 * 100
         ],
+=======
+        x=
+            comparativo_meta[
+                "Trimestre"
+            ],
+
+        y=
+            comparativo_meta[
+                "Taxa"
+            ],
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
         text=[
             f"{taxa_t1:.1%}",
@@ -3343,15 +4583,23 @@ fig_meta.add_trace(
         ],
 
         name=
+<<<<<<< HEAD
             "Taxa realizada",
+=======
+            "Taxa realizada"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
 fig_meta.add_hline(
+<<<<<<< HEAD
 
     y=
         100,
+=======
+    y=100,
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
     line_dash=
         "dash",
@@ -3359,6 +4607,7 @@ fig_meta.add_hline(
     line_color=
         AMARELO,
 
+<<<<<<< HEAD
     line_width=
         3,
 
@@ -3367,26 +4616,47 @@ fig_meta.add_hline(
 
     annotation_position=
         "top right",
+=======
+    line_width=3,
+
+    annotation_text=
+        "Meta 100%",
+
+    annotation_position=
+        "top right"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
 fig_meta.update_yaxes(
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     range=[
         0,
         110
     ],
 
     title=
+<<<<<<< HEAD
         "% das equipes com contato",
+=======
+        "Taxa de contato (%)"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
 aplicar_layout_plotly(
     fig_meta,
     (
+<<<<<<< HEAD
         "Cobertura das equipes no PMS "
         "em cada ciclo de 3 meses"
+=======
+        "Taxa de Contato realizada x "
+        "meta de 100% em 3 meses"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
@@ -3398,6 +4668,7 @@ st.plotly_chart(
 
 
 # ============================================================
+<<<<<<< HEAD
 # 2. VOLUME X COBERTURA
 # ============================================================
 
@@ -3406,23 +4677,44 @@ titulo_secao(
     (
         "Diferencia o total de inspeções registradas no ESS "
         "da quantidade de equipes efetivamente alcançadas."
+=======
+# PRESENÇA DA LIDERANÇA
+# ============================================================
+
+titulo_secao(
+    "Presença da liderança",
+    (
+        "Líderes, Gerentes, Executivos e Superintendentes "
+        "que realizaram pelo menos uma inspeção."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
+<<<<<<< HEAD
 c1, c2, c3, c4 = st.columns(
     4
+=======
+c1, c2, c3, c4 = (
+    st.columns(4)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
 with c1:
 
     card_kpi(
+<<<<<<< HEAD
         "Total de inspeções PMS",
         resumo_semestre[
             "total"
         ],
         "inspeções realizadas pela liderança",
+=======
+        "Lideranças ativas",
+        lideres_ativos_semestre,
+        "inspetores distintos no semestre",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         AZUL_PRINCIPAL
     )
 
@@ -3430,6 +4722,7 @@ with c1:
 with c2:
 
     card_kpi(
+<<<<<<< HEAD
         "Equipes únicas com contato",
         resumo_semestre[
             "equipes"
@@ -3523,15 +4816,25 @@ with c2:
 
     card_kpi(
         "Meta de lideranças",
+=======
+        "Meta de líderes",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         (
             meta_lideres
             if meta_lideres
             is not None
+<<<<<<< HEAD
             else
             "N/D"
         ),
         (
             "meta cadastrada para a distribuidora"
+=======
+            else "N/D"
+        ),
+        (
+            "Meta da distribuidora"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             if meta_lideres
             is not None
             else
@@ -3544,7 +4847,11 @@ with c2:
 with c3:
 
     card_kpi(
+<<<<<<< HEAD
         "Participação da liderança",
+=======
+        "Presença acumulada",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         (
             f"{aderencia_lideres:.1%}"
             if aderencia_lideres
@@ -3553,45 +4860,96 @@ with c3:
             "N/D"
         ),
         (
+<<<<<<< HEAD
             "lideranças com PMS ÷ meta cadastrada"
             if aderencia_lideres
             is not None
             else
             "aguardando meta da distribuidora"
         ),
+=======
+            "lideranças ativas ÷ meta"
+            if aderencia_lideres
+            is not None
+            else
+            "necessário cadastrar a meta"
+        ),
+        (
+            VERDE
+            if (
+                aderencia_lideres
+                is not None
+                and
+                aderencia_lideres >= 1
+            )
+            else
+            LARANJA
+        )
+    )
+
+
+with c4:
+
+    card_kpi(
+        "Inspeções da liderança",
+        total_inspecoes_lideranca,
+        "inspeções distintas",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         AZUL_MEDIO
     )
 
 
 # ============================================================
+<<<<<<< HEAD
 # GRÁFICOS DA LIDERANÇA
 # ============================================================
 
 col1, col2 = st.columns(
     2
+=======
+# GRÁFICOS DE LIDERANÇA
+# ============================================================
+
+col1, col2 = (
+    st.columns(2)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
 with col1:
 
+<<<<<<< HEAD
     fig_tipo = px.bar(
 
+=======
+    fig_tipo_lider = px.bar(
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         lideres_por_tipo,
 
         x=
             "Tipo de liderança",
 
         y=
+<<<<<<< HEAD
             "Pessoas com inspeção PMS",
 
         text=
             "Pessoas com inspeção PMS",
+=======
+            "Quantidade de líderes",
+
+        text=
+            "Quantidade de líderes",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
         color=
             "Tipo de liderança",
 
         color_discrete_map={
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             "Líder":
                 AZUL_CLARO,
 
@@ -3603,26 +4961,38 @@ with col1:
 
             "Superintendente":
                 AZUL_ESCURO,
+<<<<<<< HEAD
 
             "Técnico de Distribuição":
                 AMARELO,
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         }
     )
 
 
+<<<<<<< HEAD
     fig_tipo.update_traces(
+=======
+    fig_tipo_lider.update_traces(
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         textposition=
             "outside"
     )
 
 
+<<<<<<< HEAD
     fig_tipo.update_layout(
+=======
+    fig_tipo_lider.update_layout(
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         showlegend=
             False
     )
 
 
     aplicar_layout_plotly(
+<<<<<<< HEAD
         fig_tipo,
         (
             "Pessoas com inspeção PMS "
@@ -3639,17 +5009,32 @@ with col1:
 
     fig_tipo.update_xaxes(
         title=""
+=======
+        fig_tipo_lider,
+        "Quantidade de lideranças ativas por tipo"
+    )
+
+
+    fig_tipo_lider.update_yaxes(
+        title=
+            "Inspetores distintos"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
     st.plotly_chart(
+<<<<<<< HEAD
         fig_tipo,
+=======
+        fig_tipo_lider,
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         use_container_width=True
     )
 
 
 with col2:
 
+<<<<<<< HEAD
     fig_lideres_mes = go.Figure()
 
 
@@ -3658,10 +5043,21 @@ with col2:
 
             x=
                 lideres_mensais[
+=======
+    fig_presenca = go.Figure()
+
+
+    fig_presenca.add_trace(
+        go.Bar(
+
+            x=
+                resumo_mensal[
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
                     "Mês"
                 ],
 
             y=
+<<<<<<< HEAD
                 lideres_mensais[
                     "Lideranças com inspeção PMS"
                 ],
@@ -3669,6 +5065,15 @@ with col2:
             text=
                 lideres_mensais[
                     "Lideranças com inspeção PMS"
+=======
+                resumo_mensal[
+                    "Líderes ativos"
+                ],
+
+            text=
+                resumo_mensal[
+                    "Líderes ativos"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
                 ],
 
             textposition=
@@ -3680,15 +5085,24 @@ with col2:
                 AZUL_CLARO,
                 AZUL_PRINCIPAL,
                 AZUL_PRINCIPAL,
+<<<<<<< HEAD
                 AZUL_PRINCIPAL,
             ],
 
             name=
                 "Pessoas com PMS",
+=======
+                AZUL_PRINCIPAL
+            ],
+
+            name=
+                "Lideranças ativas"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         )
     )
 
 
+<<<<<<< HEAD
     if (
         meta_lideres
         is not None
@@ -3696,6 +5110,11 @@ with col2:
 
         fig_lideres_mes.add_hline(
 
+=======
+    if meta_lideres is not None:
+
+        fig_presenca.add_hline(
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             y=
                 meta_lideres,
 
@@ -3705,6 +5124,7 @@ with col2:
             line_color=
                 AMARELO,
 
+<<<<<<< HEAD
             line_width=
                 3,
 
@@ -3713,18 +5133,35 @@ with col2:
 
             annotation_position=
                 "top right",
+=======
+            line_width=3,
+
+            annotation_text=
+                f"Meta: {meta_lideres}",
+
+            annotation_position=
+                "top right"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         )
 
 
     aplicar_layout_plotly(
+<<<<<<< HEAD
         fig_lideres_mes,
         (
             "Pessoas da liderança que realizaram "
             "PMS em cada mês"
+=======
+        fig_presenca,
+        (
+            "Quantidade de lideranças distintas "
+            "com inspeção por mês"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         )
     )
 
 
+<<<<<<< HEAD
     fig_lideres_mes.update_yaxes(
         title=
             "Quantidade de pessoas"
@@ -3733,15 +5170,31 @@ with col2:
 
     fig_lideres_mes.update_xaxes(
         title=""
+=======
+    fig_presenca.update_yaxes(
+        title=
+            "Lideranças ativas"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
     st.plotly_chart(
+<<<<<<< HEAD
         fig_lideres_mes,
+=======
+        fig_presenca,
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         use_container_width=True
     )
 
 
+<<<<<<< HEAD
+=======
+# ============================================================
+# TABELA LIDERANÇA
+# ============================================================
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 st.dataframe(
     lideres_por_tipo,
     use_container_width=True,
@@ -3750,6 +5203,7 @@ st.dataframe(
 
 
 # ============================================================
+<<<<<<< HEAD
 # 4. COBERTURA MENSAL
 # ============================================================
 
@@ -3758,10 +5212,21 @@ titulo_secao(
     (
         "Quantidade de equipes diferentes que receberam "
         "pelo menos uma inspeção PMS no mês."
+=======
+# COBERTURA MENSAL
+# ============================================================
+
+titulo_secao(
+    "Cobertura mensal das equipes",
+    (
+        "Mostra quantas equipes tiveram pelo menos uma "
+        "inspeção da liderança em cada mês."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
+<<<<<<< HEAD
 fig_cobertura = go.Figure()
 
 
@@ -3773,10 +5238,44 @@ fig_cobertura.add_trace(
 
         x=
             resumo_cobertura_mensal[
+=======
+cores_com = [
+    AZUL_CLARO,
+    AZUL_CLARO,
+    AZUL_CLARO,
+    AZUL_PRINCIPAL,
+    AZUL_PRINCIPAL,
+    AZUL_PRINCIPAL
+]
+
+
+cores_sem = [
+    "#D9E7F5",
+    "#D9E7F5",
+    "#D9E7F5",
+    "#A8B8D0",
+    "#A8B8D0",
+    "#A8B8D0"
+]
+
+
+fig_mensal = go.Figure()
+
+
+fig_mensal.add_trace(
+    go.Bar(
+
+        name=
+            "Com contato",
+
+        x=
+            resumo_mensal[
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
                 "Mês"
             ],
 
         y=
+<<<<<<< HEAD
             resumo_cobertura_mensal[
                 "Equipes únicas com contato"
             ],
@@ -3820,38 +5319,97 @@ fig_cobertura.add_trace(
         text=
             resumo_cobertura_mensal[
                 "Equipes sem contato"
+=======
+            resumo_mensal[
+                "Com contato"
+            ],
+
+        text=
+            resumo_mensal[
+                "Com contato"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             ],
 
         textposition=
             "inside",
 
         marker_color=
+<<<<<<< HEAD
             "#CDD7E5",
+=======
+            cores_com
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
+<<<<<<< HEAD
 fig_cobertura.update_layout(
+=======
+fig_mensal.add_trace(
+    go.Bar(
+
+        name=
+            "Sem contato",
+
+        x=
+            resumo_mensal[
+                "Mês"
+            ],
+
+        y=
+            resumo_mensal[
+                "Sem contato"
+            ],
+
+        text=
+            resumo_mensal[
+                "Sem contato"
+            ],
+
+        textposition=
+            "inside",
+
+        marker_color=
+            cores_sem
+    )
+)
+
+
+fig_mensal.update_layout(
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     barmode=
         "stack"
 )
 
 
 aplicar_layout_plotly(
+<<<<<<< HEAD
     fig_cobertura,
     (
         "Equipes alcançadas pela liderança "
         "em cada mês"
+=======
+    fig_mensal,
+    (
+        "Equipes com contato x "
+        "sem contato em cada mês"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
+<<<<<<< HEAD
 fig_cobertura.update_yaxes(
+=======
+fig_mensal.update_yaxes(
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     title=
         "Quantidade de equipes"
 )
 
 
+<<<<<<< HEAD
 fig_cobertura.update_xaxes(
     title=""
 )
@@ -3859,11 +5417,16 @@ fig_cobertura.update_xaxes(
 
 st.plotly_chart(
     fig_cobertura,
+=======
+st.plotly_chart(
+    fig_mensal,
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     use_container_width=True
 )
 
 
 # ============================================================
+<<<<<<< HEAD
 # 5. OUTRAS ORIGENS
 # ============================================================
 
@@ -3872,38 +5435,115 @@ titulo_secao(
     (
         "O PMS é o foco da Operação Segura. "
         "As demais origens do ESS aparecem como contexto."
+=======
+# RESUMO MENSAL
+# ============================================================
+
+resumo_visual = (
+    resumo_mensal.copy()
+)
+
+
+resumo_visual[
+    "Taxa de contato"
+] = (
+    resumo_visual[
+        "Taxa de contato"
+    ]
+    .map(
+        lambda x:
+            f"{x:.1%}"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
+<<<<<<< HEAD
 c1, c2, c3 = st.columns(
     3
+=======
+resumo_visual[
+    "Presença de líderes"
+] = (
+    resumo_visual[
+        "Presença de líderes"
+    ]
+    .map(
+        lambda x:
+            (
+                f"{x:.1%}"
+                if pd.notna(x)
+                else "N/D"
+            )
+    )
+)
+
+
+st.dataframe(
+    resumo_visual,
+    use_container_width=True,
+    hide_index=True
+)
+
+
+# ============================================================
+# NÃO LÍDERES
+# ============================================================
+
+titulo_secao(
+    "Inspeções realizadas por não líderes",
+    (
+        "Executivos não aparecem nesta seção. "
+        "Os cargos restantes foram agrupados "
+        "em perfis padronizados."
+    )
+)
+
+
+c1, c2, c3 = (
+    st.columns(3)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
 with c1:
 
     card_kpi(
+<<<<<<< HEAD
         "Inspeções PMS",
         total_inspecoes_pms,
         "foco principal da Operação Segura",
         AZUL_PRINCIPAL
+=======
+        "Total de inspetores",
+        total_inspetores_nao_lideres,
+        "não líderes distintos",
+        AZUL_MEDIO
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
 with c2:
 
     card_kpi(
+<<<<<<< HEAD
         "Inspeções em outras origens",
         total_inspecoes_outras_origens,
         "Rotina, Mutirão, Altas Horas e outras",
         AZUL_MEDIO
+=======
+        "Inspeções de não líderes",
+        total_inspecoes_nao_lideres,
+        "inspeções distintas",
+        AZUL_PRINCIPAL
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
 with c3:
 
     card_kpi(
+<<<<<<< HEAD
         "Total de inspeções da liderança",
         total_inspecoes_contexto,
         "PMS + demais origens do recorte ESS",
@@ -4022,22 +5662,40 @@ with c2:
 
     card_kpi(
         "Perfis de não líderes",
+=======
+        "Perfis identificados",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         nao_lideres_resumo[
             "Perfil Não Líder"
         ]
         .nunique(),
+<<<<<<< HEAD
         "categorias após padronização dos cargos",
+=======
+        "categorias padronizadas",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         AMARELO
     )
 
 
+<<<<<<< HEAD
+=======
+# ============================================================
+# GRÁFICO NÃO LÍDERES
+# ============================================================
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 if not nao_lideres_resumo.empty:
 
     grafico_nao_lideres = (
         nao_lideres_resumo
+<<<<<<< HEAD
         .head(
             12
         )
+=======
+        .head(12)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         .sort_values(
             "Inspetores",
             ascending=True
@@ -4046,7 +5704,10 @@ if not nao_lideres_resumo.empty:
 
 
     fig_nao_lideres = px.bar(
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         grafico_nao_lideres,
 
         x=
@@ -4059,29 +5720,46 @@ if not nao_lideres_resumo.empty:
             "h",
 
         text=
+<<<<<<< HEAD
             "Inspetores",
+=======
+            "Inspetores"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
     fig_nao_lideres.update_traces(
+<<<<<<< HEAD
 
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         marker_color=
             AZUL_MEDIO,
 
         textposition=
+<<<<<<< HEAD
             "outside",
+=======
+            "outside"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
     aplicar_layout_plotly(
         fig_nao_lideres,
         (
+<<<<<<< HEAD
             "Pessoas não classificadas como liderança "
             "que realizaram PMS"
+=======
+            "Quantidade de inspetores "
+            "não líderes por perfil"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         )
     )
 
 
+<<<<<<< HEAD
     fig_nao_lideres.update_yaxes(
         title=""
     )
@@ -4090,6 +5768,16 @@ if not nao_lideres_resumo.empty:
     fig_nao_lideres.update_xaxes(
         title=
             "Quantidade de pessoas"
+=======
+    fig_nao_lideres.update_xaxes(
+        title=
+            "Inspetores distintos"
+    )
+
+
+    fig_nao_lideres.update_yaxes(
+        title=""
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
@@ -4107,6 +5795,7 @@ if not nao_lideres_resumo.empty:
 
 
 # ============================================================
+<<<<<<< HEAD
 # 7. CONFORMIDADES
 # ============================================================
 
@@ -4115,12 +5804,28 @@ titulo_secao(
     (
         "Avaliação das inspeções de liderança "
         "registradas no ESS."
+=======
+# CONFORMIDADE
+# ============================================================
+
+titulo_secao(
+    "Conformidades e não conformidades",
+    (
+        "Uma inspeção é considerada não conforme "
+        "quando possui pelo menos um registro "
+        "de não conformidade."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
 
+<<<<<<< HEAD
 c1, c2, c3, c4 = st.columns(
     4
+=======
+c1, c2, c3, c4 = (
+    st.columns(4)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
@@ -4129,7 +5834,11 @@ with c1:
     card_kpi(
         "Inspeções analisadas",
         total_inspecoes_analisadas,
+<<<<<<< HEAD
         "inspeções PMS avaliadas",
+=======
+        "inspeções distintas da liderança",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         AZUL_PRINCIPAL
     )
 
@@ -4137,9 +5846,15 @@ with c1:
 with c2:
 
     card_kpi(
+<<<<<<< HEAD
         "Sem não conformidade",
         total_conformes,
         "inspeções sem NC registrada",
+=======
+        "Conformes",
+        total_conformes,
+        "sem NC identificada",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         VERDE
     )
 
@@ -4149,7 +5864,11 @@ with c3:
     card_kpi(
         "Com não conformidade",
         total_nao_conformes,
+<<<<<<< HEAD
         "inspeções com pelo menos uma NC",
+=======
+        "com pelo menos 1 NC",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         LARANJA
     )
 
@@ -4157,13 +5876,20 @@ with c3:
 with c4:
 
     card_kpi(
+<<<<<<< HEAD
         "Percentual sem NC",
         f"{taxa_conformidade:.1%}",
         "inspeções sem NC ÷ inspeções analisadas",
+=======
+        "Taxa de conformidade",
+        f"{taxa_conformidade:.1%}",
+        "conformes ÷ analisadas",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         VERDE
     )
 
 
+<<<<<<< HEAD
 if not status_inspecoes.empty:
 
     conformidade_mensal = (
@@ -4266,6 +5992,104 @@ if not status_inspecoes.empty:
         fig_conformidade,
         use_container_width=True
     )
+=======
+# ============================================================
+# CONFORMIDADE MENSAL
+# ============================================================
+
+conformidade_mensal = (
+    status_inspecoes
+    .groupby(
+        [
+            "Mês Número",
+            "Mês",
+            "Status"
+        ]
+    )
+    .size()
+    .reset_index(
+        name=
+            "Inspeções"
+    )
+)
+
+
+conformidade_mensal[
+    "Mês"
+] = pd.Categorical(
+    conformidade_mensal[
+        "Mês"
+    ],
+
+    categories=
+        ordem_meses,
+
+    ordered=True
+)
+
+
+conformidade_mensal = (
+    conformidade_mensal
+    .sort_values(
+        "Mês"
+    )
+)
+
+
+fig_conformidade = px.bar(
+    conformidade_mensal,
+
+    x=
+        "Mês",
+
+    y=
+        "Inspeções",
+
+    color=
+        "Status",
+
+    barmode=
+        "group",
+
+    text=
+        "Inspeções",
+
+    color_discrete_map={
+        "Conforme":
+            VERDE,
+
+        "Não Conforme":
+            LARANJA,
+    }
+)
+
+
+fig_conformidade.update_traces(
+    textposition=
+        "outside"
+)
+
+
+aplicar_layout_plotly(
+    fig_conformidade,
+    (
+        "Inspeções conformes x "
+        "não conformes por mês"
+    )
+)
+
+
+fig_conformidade.update_yaxes(
+    title=
+        "Quantidade de inspeções"
+)
+
+
+st.plotly_chart(
+    fig_conformidade,
+    use_container_width=True
+)
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 
 # ============================================================
@@ -4320,7 +6144,11 @@ if (
             "h",
 
         text=
+<<<<<<< HEAD
             "Ocorrências",
+=======
+            "Ocorrências"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
@@ -4342,10 +6170,14 @@ if (
 
     aplicar_layout_plotly(
         fig_nc,
+<<<<<<< HEAD
         (
             "Principais descrições "
             "de não conformidade"
         )
+=======
+        "Principais descrições de não conformidade"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
@@ -4361,14 +6193,23 @@ if (
 
 
 # ============================================================
+<<<<<<< HEAD
 # DETALHAMENTO DAS NÃO CONFORMIDADES
+=======
+# DETALHAMENTO DAS NCS
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 titulo_secao(
     "Detalhamento das não conformidades",
     (
+<<<<<<< HEAD
         "Registros da base ESS relacionados "
         "às inspeções PMS da liderança."
+=======
+        "Ocorrências registradas nas inspeções "
+        "realizadas pela liderança."
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 )
 
@@ -4378,6 +6219,7 @@ if not nc_detalhe.empty:
     colunas_nc = [
         "Distribuidora",
         "Data de Execução",
+        "Origem Padronizada",
         "Inspeção",
         "ID da Equipe",
         "Inspetor",
@@ -4413,6 +6255,22 @@ if not nc_detalhe.empty:
     )
 
 
+    if (
+        "Origem Padronizada"
+        in tabela_nc.columns
+    ):
+
+        tabela_nc = (
+            tabela_nc
+            .rename(
+                columns={
+                    "Origem Padronizada":
+                        "Origem"
+                }
+            )
+        )
+
+
     st.dataframe(
         tabela_nc,
         use_container_width=True,
@@ -4428,6 +6286,7 @@ else:
     )
 
 
+<<<<<<< HEAD
 # ============================================================
 # 8. INSPEÇÕES POR EQUIPE
 # ============================================================
@@ -4439,6 +6298,27 @@ titulo_secao(
         "da liderança estão registradas no ESS "
         "para aquela equipe no mês."
     )
+=======
+else:
+
+    st.success(
+        "Nenhuma não conformidade encontrada "
+        "no recorte selecionado."
+    )
+
+
+# ============================================================
+# INSPEÇÕES POR EQUIPE
+# ============================================================
+
+titulo_secao(
+    "Inspeções por equipe",
+    (
+        "Cada célula representa a quantidade de "
+        "inspeções distintas realizadas pela liderança "
+        "naquela equipe durante o mês."
+    )
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 )
 
 
@@ -4470,8 +6350,15 @@ tabela_equipes = (
     tabela_equipes
     .merge(
         cadastro_equipes,
+<<<<<<< HEAD
         on=
             "Chave Equipe",
+=======
+
+        on=
+            "Chave Equipe",
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
         how=
             "left"
     )
@@ -4487,7 +6374,11 @@ colunas_tabela_equipes = [
     "Abril",
     "Maio",
     "Junho",
+<<<<<<< HEAD
     "Total no semestre",
+=======
+    "Total",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 ]
 
 
@@ -4496,7 +6387,11 @@ tabela_equipes = (
         [
             coluna
             for coluna
+<<<<<<< HEAD
             in colunas_tabela_equipes
+=======
+            in colunas_ordem
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
             if coluna
             in tabela_equipes.columns
         ]
@@ -4510,8 +6405,13 @@ opcao_equipes = st.radio(
 
     [
         "Todas as equipes",
+<<<<<<< HEAD
         "Somente equipes sem contato PMS",
         "Somente equipes com contato PMS",
+=======
+        "Somente equipes sem contato",
+        "Somente equipes com contato",
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     ],
 
     horizontal=True,
@@ -4568,7 +6468,11 @@ st.dataframe(
 
 
 # ============================================================
+<<<<<<< HEAD
 # 9. VALIDAÇÃO COM A BASE ESS
+=======
+# ERROS DE CARREGAMENTO
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 # ============================================================
 
 titulo_secao(
@@ -4630,6 +6534,7 @@ with st.expander(
 
 
     st.write(
+<<<<<<< HEAD
         f"Equipes identificadas na base ESS: "
         f"**{total_equipes}**"
     )
@@ -4639,6 +6544,18 @@ with st.expander(
         f"Total de inspeções PMS da liderança: "
         f"**{resumo_semestre['total']}**"
     )
+=======
+        f"Origens consideradas: "
+        f"**{', '.join(origens_selecionadas)}**"
+    )
+
+
+    st.write(
+        f"Total de equipes no universo: "
+        f"**{total_equipes}**"
+    )
+
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
 
 
     st.write(
@@ -4667,8 +6584,29 @@ with st.expander(
 
 
     st.write(
-        f"Equipes sem contato no T1: "
+        f"Taxa de Contato T1: "
+        f"**{taxa_t1:.1%}**"
+    )
+
+
+    st.write(
+        f"Equipes pendentes no T1: "
         f"**{equipes_sem_contato_t1}**"
+    )
+
+<<<<<<< HEAD
+
+    st.write(
+        f"Taxa de Contato T2: "
+        f"**{taxa_t2:.1%}**"
+    )
+=======
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
+
+
+    st.write(
+        f"Gap T2 para 100%: "
+        f"**{gap_t2:.1f} p.p.**"
     )
 
 
@@ -4679,20 +6617,33 @@ with st.expander(
 
 
     st.write(
-        f"Gap T2 para 100%: "
-        f"**{gap_t2:.1f} p.p.**"
-    )
-
-
-    st.write(
-        f"Equipes sem contato no T2: "
+        f"Equipes pendentes no T2: "
         f"**{equipes_sem_contato_t2}**"
     )
 
 
     st.write(
+<<<<<<< HEAD
         f"Lideranças que realizaram PMS: "
         f"**{lideres_ativos}**"
+    )
+
+=======
+        f"Lideranças ativas: "
+        f"**{lideres_ativos_semestre}**"
+    )
+
+
+    st.write(
+        f"Meta de lideranças: "
+        f"**{meta_lideres if meta_lideres is not None else 'N/D'}**"
+    )
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
+
+
+    st.write(
+        f"Inspetores não líderes: "
+        f"**{total_inspetores_nao_lideres}**"
     )
 
 
@@ -4720,6 +6671,7 @@ with st.expander(
     )
 
 
+<<<<<<< HEAD
     # ========================================================
     # CARGOS AINDA NÃO CLASSIFICADOS
     # ========================================================
@@ -4739,6 +6691,11 @@ with st.expander(
         .str.strip()
         .value_counts()
         .reset_index()
+=======
+    st.write(
+        f"Taxa de conformidade: "
+        f"**{taxa_conformidade:.1%}**"
+>>>>>>> 53b421b8e0724afa32b57e022fac068dad5eea2b
     )
 
 
