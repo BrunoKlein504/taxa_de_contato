@@ -7,11 +7,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
-
-
-# ============================================================
-# CONFIGURAÇÃO DA PÁGINA
-# ============================================================
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="Operação Segura | Taxa de Contato",
@@ -20,10 +16,54 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+components.html(
+    """
+    <script>
+    (() => {
+        const selectors = [
+            '[class*="_profileContainer"]',
+            '[class*="_viewerBadge"]'
+        ];
 
-# ============================================================
-# REGRAS DE NEGÓCIO
-# ============================================================
+        const hide = (doc) => {
+            selectors.forEach((selector) => {
+                doc.querySelectorAll(selector).forEach((element) => {
+                    element.style.setProperty('display', 'none', 'important');
+                    element.style.setProperty('visibility', 'hidden', 'important');
+                    element.style.setProperty('opacity', '0', 'important');
+                    element.style.setProperty('pointer-events', 'none', 'important');
+                });
+            });
+        };
+
+        const apply = () => {
+            let current = window;
+
+            for (let level = 0; level < 5; level += 1) {
+                try {
+                    hide(current.document);
+                } catch (error) {
+                }
+
+                try {
+                    if (current === current.parent) {
+                        break;
+                    }
+                    current = current.parent;
+                } catch (error) {
+                    break;
+                }
+            }
+        };
+
+        apply();
+        window.setInterval(apply, 500);
+    })();
+    </script>
+    """,
+    height=0,
+    width=0,
+)
 
 DISTRIBUIDORAS = {
     "AL": "Alagoas",
@@ -35,26 +75,11 @@ DISTRIBUIDORAS = {
     "PA": "Pará",
 }
 
-
-# ============================================================
-# META DE LIDERANÇAS
-# ============================================================
-
 META_LIDERES = {
     "AL": 44,
 }
 
-
-# ============================================================
-# META DA TAXA DE CONTATO
-# ============================================================
-
 META_TAXA_CONTATO = 1.00
-
-
-# ============================================================
-# TIPOS CONSIDERADOS COMO LIDERANÇA
-# ============================================================
 
 TIPOS_LIDERANCA = [
     "Líder",
@@ -64,28 +89,13 @@ TIPOS_LIDERANCA = [
     "Técnico de Distribuição",
 ]
 
-
-# ============================================================
-# ORIGEM PRINCIPAL
-# ============================================================
-
 ORIGEM_PRINCIPAL = "PMS"
-
-
-# ============================================================
-# ORIGENS FORA DO CONTEXTO PRINCIPAL
-# ============================================================
 
 ORIGENS_EXCLUIDAS = {
     "PPCR",
     "CIPA",
     "Não informado",
 }
-
-
-# ============================================================
-# PALETA
-# ============================================================
 
 AZUL_PRINCIPAL = "#2161DD"
 AZUL_EQTL = "#005BCD"
@@ -105,11 +115,6 @@ CINZA_TEXTO = "#5F6B7A"
 BRANCO = "#FFFFFF"
 PRETO = "#242424"
 
-
-# ============================================================
-# CAMINHOS
-# ============================================================
-
 try:
 
     BASE_DIR = Path(__file__).resolve().parent
@@ -117,7 +122,6 @@ try:
 except NameError:
 
     BASE_DIR = Path.cwd()
-
 
 PASTA_BASE = BASE_DIR / "base"
 
@@ -131,11 +135,6 @@ LOGO_EQTL = (
     / "marca_equatorial.png"
 )
 
-
-# ============================================================
-# FUNÇÕES AUXILIARES
-# ============================================================
-
 def imagem_base64(caminho):
 
     if not caminho.exists():
@@ -146,7 +145,6 @@ def imagem_base64(caminho):
         return base64.b64encode(
             arquivo.read()
         ).decode()
-
 
 def normalizar_texto(valor):
 
@@ -171,7 +169,6 @@ def normalizar_texto(valor):
         )
     )
 
-
 def normalizar_id(serie):
 
     return (
@@ -184,11 +181,6 @@ def normalizar_id(serie):
             regex=True
         )
     )
-
-
-# ============================================================
-# IDENTIFICAÇÃO DA DISTRIBUIDORA
-# ============================================================
 
 def identificar_distribuidora(
     nome_arquivo
@@ -221,11 +213,6 @@ def identificar_distribuidora(
         "Não identificada"
     )
 
-
-# ============================================================
-# PADRONIZAÇÃO DA ORIGEM
-# ============================================================
-
 def padronizar_origem(valor):
 
     texto = normalizar_texto(
@@ -236,21 +223,17 @@ def padronizar_origem(valor):
 
         return "Não informado"
 
-
     if "PMS" in texto:
 
         return "PMS"
-
 
     if "ROTINA" in texto:
 
         return "Rotina"
 
-
     if "MUTIRAO" in texto:
 
         return "Mutirão"
-
 
     if (
         "ALTA" in texto
@@ -260,23 +243,15 @@ def padronizar_origem(valor):
 
         return "Altas Horas"
 
-
     if "PPCR" in texto:
 
         return "PPCR"
-
 
     if "CIPA" in texto:
 
         return "CIPA"
 
-
     return "Outras"
-
-
-# ============================================================
-# CLASSIFICAÇÃO DA LIDERANÇA
-# ============================================================
 
 def classificar_tipo_lideranca(cargo):
 
@@ -287,11 +262,6 @@ def classificar_tipo_lideranca(cargo):
     if not texto:
 
         return None
-
-
-    # --------------------------------------------------------
-    # TÉCNICO DE DISTRIBUIÇÃO
-    # --------------------------------------------------------
 
     if (
         "DISTRIBUICAO" in texto
@@ -308,18 +278,12 @@ def classificar_tipo_lideranca(cargo):
 
         return "Técnico de Distribuição"
 
-
     if re.search(
         r"\bTEC.*DIST",
         texto
     ):
 
         return "Técnico de Distribuição"
-
-
-    # --------------------------------------------------------
-    # SUPERINTENDENTE
-    # --------------------------------------------------------
 
     if (
         "SUPERINTEND" in texto
@@ -332,11 +296,6 @@ def classificar_tipo_lideranca(cargo):
 
         return "Superintendente"
 
-
-    # --------------------------------------------------------
-    # GERENTE
-    # --------------------------------------------------------
-
     if (
         "GERENTE" in texto
         or
@@ -347,11 +306,6 @@ def classificar_tipo_lideranca(cargo):
     ):
 
         return "Gerente"
-
-
-    # --------------------------------------------------------
-    # EXECUTIVO
-    # --------------------------------------------------------
 
     if (
         "EXECUTIVO" in texto
@@ -366,22 +320,11 @@ def classificar_tipo_lideranca(cargo):
 
         return "Executivo"
 
-
-    # --------------------------------------------------------
-    # LÍDER
-    # --------------------------------------------------------
-
     if "LIDER" in texto:
 
         return "Líder"
 
-
     return None
-
-
-# ============================================================
-# CLASSIFICAÇÃO DOS NÃO LÍDERES
-# ============================================================
 
 def classificar_nao_lider(cargo):
 
@@ -393,9 +336,6 @@ def classificar_nao_lider(cargo):
 
         return None
 
-
-    # Se for liderança, não entra nesta visão.
-
     if (
         classificar_tipo_lideranca(
             cargo
@@ -404,11 +344,6 @@ def classificar_nao_lider(cargo):
     ):
 
         return None
-
-
-    # --------------------------------------------------------
-    # TÉCNICO DE SEGURANÇA
-    # --------------------------------------------------------
 
     if (
         "SEGURANCA" in texto
@@ -420,11 +355,6 @@ def classificar_nao_lider(cargo):
             "Técnico de Segurança "
             "do Trabalho"
         )
-
-
-    # --------------------------------------------------------
-    # TÉCNICO DE OPERAÇÃO
-    # --------------------------------------------------------
 
     if (
         "OPERACAO" in texto
@@ -440,11 +370,6 @@ def classificar_nao_lider(cargo):
     ):
 
         return "Técnico de Operação"
-
-
-    # --------------------------------------------------------
-    # TÉCNICO DE PROJETOS / OBRAS
-    # --------------------------------------------------------
 
     if (
         (
@@ -468,37 +393,17 @@ def classificar_nao_lider(cargo):
             "e Obras"
         )
 
-
-    # --------------------------------------------------------
-    # ELETRICISTA
-    # --------------------------------------------------------
-
     if "ELETRICISTA" in texto:
 
         return "Eletricista"
-
-
-    # --------------------------------------------------------
-    # ENGENHEIRO
-    # --------------------------------------------------------
 
     if "ENGENHEIR" in texto:
 
         return "Engenheiro"
 
-
-    # --------------------------------------------------------
-    # FISCAL
-    # --------------------------------------------------------
-
     if "FISCAL" in texto:
 
         return "Fiscal"
-
-
-    # --------------------------------------------------------
-    # ANALISTA
-    # --------------------------------------------------------
 
     if (
         "ANALISTA" in texto
@@ -511,49 +416,23 @@ def classificar_nao_lider(cargo):
 
         return "Analista"
 
-
-    # --------------------------------------------------------
-    # COORDENADOR
-    # --------------------------------------------------------
-
     if "COORDEN" in texto:
 
         return "Coordenador"
-
-
-    # --------------------------------------------------------
-    # SUPERVISOR
-    # --------------------------------------------------------
 
     if "SUPERVIS" in texto:
 
         return "Supervisor"
 
-
-    # --------------------------------------------------------
-    # ASSISTENTE
-    # --------------------------------------------------------
-
     if "ASSIST" in texto:
 
         return "Assistente"
-
-
-    # --------------------------------------------------------
-    # TRAINEE
-    # --------------------------------------------------------
 
     if "TRAINEE" in texto:
 
         return "Trainee"
 
-
     return "Outros"
-
-
-# ============================================================
-# CARREGAMENTO DAS BASES ESS
-# ============================================================
 
 @st.cache_data
 def carregar_bases(caminhos):
@@ -561,13 +440,11 @@ def carregar_bases(caminhos):
     bases = []
     erros = []
 
-
     for caminho_str in caminhos:
 
         caminho = Path(
             caminho_str
         )
-
 
         try:
 
@@ -577,12 +454,10 @@ def carregar_bases(caminhos):
                     "Checklists Realizados"
             )
 
-
             temp.columns = (
                 temp.columns
                 .str.strip()
             )
-
 
             sigla, distribuidora = (
                 identificar_distribuidora(
@@ -590,26 +465,21 @@ def carregar_bases(caminhos):
                 )
             )
 
-
             temp[
                 "Sigla Distribuidora"
             ] = sigla
-
 
             temp[
                 "Distribuidora"
             ] = distribuidora
 
-
             temp[
                 "Arquivo Origem"
             ] = caminho.name
 
-
             bases.append(
                 temp
             )
-
 
         except Exception as erro:
 
@@ -623,7 +493,6 @@ def carregar_bases(caminhos):
                 }
             )
 
-
     if not bases:
 
         return (
@@ -633,13 +502,11 @@ def carregar_bases(caminhos):
             )
         )
 
-
     df_final = pd.concat(
         bases,
         ignore_index=True,
         sort=False
     )
-
 
     return (
         df_final,
@@ -647,11 +514,6 @@ def carregar_bases(caminhos):
             erros
         )
     )
-
-
-# ============================================================
-# RESUMO DE INSPEÇÕES
-# ============================================================
 
 def resumo_inspecoes(base):
 
@@ -662,14 +524,6 @@ def resumo_inspecoes(base):
             "equipes": 0,
             "repetidas": 0,
         }
-
-
-    # Uma inspeção pode aparecer em várias linhas no ESS
-    # por causa de membro, item, conformidade etc.
-    #
-    # Por isso consideramos uma ocorrência por:
-    #
-    # Inspeção + Equipe
 
     base_unica = (
         base[
@@ -687,11 +541,9 @@ def resumo_inspecoes(base):
         .drop_duplicates()
     )
 
-
     total = len(
         base_unica
     )
-
 
     equipes = (
         base_unica[
@@ -700,14 +552,12 @@ def resumo_inspecoes(base):
         .nunique()
     )
 
-
     repetidas = max(
         total
         -
         equipes,
         0
     )
-
 
     return {
         "total":
@@ -719,11 +569,6 @@ def resumo_inspecoes(base):
         "repetidas":
             int(repetidas),
     }
-
-
-# ============================================================
-# COMPONENTES VISUAIS
-# ============================================================
 
 def titulo_secao(
     titulo,
@@ -745,7 +590,6 @@ def titulo_secao(
         </div>
         """
     )
-
 
 def card_kpi(
     titulo,
@@ -776,7 +620,6 @@ def card_kpi(
         </div>
         """
     )
-
 
 def aplicar_layout_plotly(
     fig,
@@ -832,13 +675,11 @@ def aplicar_layout_plotly(
         )
     )
 
-
     fig.update_xaxes(
         showgrid=False,
         linecolor=
             CINZA_BORDA
     )
-
 
     fig.update_yaxes(
         gridcolor=
@@ -846,13 +687,7 @@ def aplicar_layout_plotly(
         zeroline=False
     )
 
-
     return fig
-
-
-# ============================================================
-# IMAGENS
-# ============================================================
 
 logo_jornada_b64 = imagem_base64(
     LOGO_JORNADA
@@ -862,11 +697,6 @@ logo_eqtl_b64 = imagem_base64(
     LOGO_EQTL
 )
 
-
-# ============================================================
-# CSS
-# ============================================================
-
 st.html(
     f"""
     <style>
@@ -874,7 +704,6 @@ st.html(
     @import url(
         'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap'
     );
-
 
     html,
     body,
@@ -887,14 +716,12 @@ st.html(
 
     }}
 
-
     .stApp {{
 
         background:
             {CINZA_FUNDO};
 
     }}
-
 
     .block-container {{
 
@@ -909,11 +736,6 @@ st.html(
 
     }}
 
-
-    /* =======================================================
-       SIDEBAR
-    ======================================================= */
-
     [data-testid="stSidebar"] {{
 
         background:
@@ -925,8 +747,12 @@ st.html(
 
     }}
 
-    [class*="_profileContainer"] {{
+    [class*="_profileContainer"],
+    [class*="_viewerBadge"] {{
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }}
     [data-testid="stSidebar"] * {{
 
@@ -935,14 +761,12 @@ st.html(
 
     }}
 
-
     [data-testid="stSidebar"] label {{
 
         font-weight:
             600;
 
     }}
-
 
     [data-testid="stSidebar"]
     [data-baseweb="select"] > div {{
@@ -952,7 +776,6 @@ st.html(
 
     }}
 
-
     [data-testid="stSidebar"]
     [data-baseweb="select"] span {{
 
@@ -960,11 +783,6 @@ st.html(
             {AZUL_ESCURO};
 
     }}
-
-
-    /* =======================================================
-       HERO
-    ======================================================= */
 
     .hero {{
 
@@ -1002,7 +820,6 @@ st.html(
 
     }}
 
-
     .hero::after {{
 
         content:
@@ -1036,7 +853,6 @@ st.html(
 
     }}
 
-
     .hero-grid {{
 
         display:
@@ -1059,14 +875,12 @@ st.html(
 
     }}
 
-
     .hero-text {{
 
         flex:
             1;
 
     }}
-
 
     .hero-tag {{
 
@@ -1096,7 +910,6 @@ st.html(
 
     }}
 
-
     .hero-title {{
 
         color:
@@ -1116,14 +929,12 @@ st.html(
 
     }}
 
-
     .hero-title-highlight {{
 
         color:
             {AMARELO};
 
     }}
-
 
     .hero-subtitle {{
 
@@ -1151,11 +962,6 @@ st.html(
             1.5;
 
     }}
-
-
-    /* =======================================================
-       FONTE ESS
-    ======================================================= */
 
     .source-banner {{
 
@@ -1199,7 +1005,6 @@ st.html(
 
     }}
 
-
     .source-badge {{
 
         background:
@@ -1225,7 +1030,6 @@ st.html(
 
     }}
 
-
     .source-text {{
 
         color:
@@ -1239,7 +1043,6 @@ st.html(
 
     }}
 
-
     .source-text span {{
 
         color:
@@ -1249,11 +1052,6 @@ st.html(
             500;
 
     }}
-
-
-    /* =======================================================
-       LOGO
-    ======================================================= */
 
     .hero-logo-container {{
 
@@ -1270,7 +1068,6 @@ st.html(
             center;
 
     }}
-
 
     .hero-logo-box {{
 
@@ -1299,7 +1096,6 @@ st.html(
 
     }}
 
-
     .hero-logo-inner {{
 
         background:
@@ -1327,7 +1123,6 @@ st.html(
 
     }}
 
-
     .hero-logo {{
 
         width:
@@ -1340,11 +1135,6 @@ st.html(
             contain;
 
     }}
-
-
-    /* =======================================================
-       SEÇÕES
-    ======================================================= */
 
     .section-title {{
 
@@ -1363,7 +1153,6 @@ st.html(
 
     }}
 
-
     .section-title h2 {{
 
         color:
@@ -1380,7 +1169,6 @@ st.html(
 
     }}
 
-
     .section-title p {{
 
         color:
@@ -1393,11 +1181,6 @@ st.html(
             5px 0 0 0;
 
     }}
-
-
-    /* =======================================================
-       KPI
-    ======================================================= */
 
     .kpi-card {{
 
@@ -1434,7 +1217,6 @@ st.html(
 
     }}
 
-
     .kpi-card::before {{
 
         content:
@@ -1460,7 +1242,6 @@ st.html(
 
     }}
 
-
     .kpi-label {{
 
         color:
@@ -1480,7 +1261,6 @@ st.html(
 
     }}
 
-
     .kpi-value {{
 
         color:
@@ -1497,7 +1277,6 @@ st.html(
 
     }}
 
-
     .kpi-subtitle {{
 
         color:
@@ -1513,11 +1292,6 @@ st.html(
             1.4;
 
     }}
-
-
-    /* =======================================================
-       BOXES
-    ======================================================= */
 
     .warning-box {{
 
@@ -1552,7 +1326,6 @@ st.html(
 
     }}
 
-
     .blue-box {{
 
         background:
@@ -1586,11 +1359,6 @@ st.html(
 
     }}
 
-
-    /* =======================================================
-       TABELAS
-    ======================================================= */
-
     [data-testid="stDataFrame"] {{
 
         background:
@@ -1608,11 +1376,6 @@ st.html(
 
     }}
 
-
-    /* =======================================================
-       RESPONSIVO
-    ======================================================= */
-
     @media (max-width: 900px) {{
 
         .hero-grid {{
@@ -1625,14 +1388,12 @@ st.html(
 
         }}
 
-
         .hero-title {{
 
             font-size:
                 34px;
 
         }}
-
 
         .hero-logo-container {{
 
@@ -1643,7 +1404,6 @@ st.html(
                 100%;
 
         }}
-
 
         .source-banner {{
 
@@ -1660,11 +1420,6 @@ st.html(
     </style>
     """
 )
-
-
-# ============================================================
-# HERO
-# ============================================================
 
 if logo_jornada_b64:
 
@@ -1690,7 +1445,6 @@ if logo_jornada_b64:
 else:
 
     logo_html = ""
-
 
 st.html(
     f"""
@@ -1732,11 +1486,6 @@ st.html(
     """
 )
 
-
-# ============================================================
-# DESTAQUE DA FONTE ESS
-# ============================================================
-
 st.html(
     """
     <div class="source-banner">
@@ -1760,18 +1509,6 @@ st.html(
     </div>
     """
 )
-st.html("""
-<style>
-[class*="_profileContainer"],
-[class*="_viewerBadge"] {
-    display: none !important;
-}
-</style>
-""")
-
-# ============================================================
-# LOCALIZA OS ARQUIVOS ESS
-# ============================================================
 
 if not PASTA_BASE.exists():
 
@@ -1781,7 +1518,6 @@ if not PASTA_BASE.exists():
     )
 
     st.stop()
-
 
 arquivos_excel = sorted(
     arquivo
@@ -1798,7 +1534,6 @@ arquivos_excel = sorted(
     )
 )
 
-
 if not arquivos_excel:
 
     st.error(
@@ -1807,11 +1542,6 @@ if not arquivos_excel:
     )
 
     st.stop()
-
-
-# ============================================================
-# CARREGAMENTO DAS BASES ESS
-# ============================================================
 
 df, erros_carregamento = (
     carregar_bases(
@@ -1823,7 +1553,6 @@ df, erros_carregamento = (
     )
 )
 
-
 if df.empty:
 
     st.error(
@@ -1831,11 +1560,6 @@ if df.empty:
     )
 
     st.stop()
-
-
-# ============================================================
-# VALIDAÇÃO DAS COLUNAS
-# ============================================================
 
 COLUNAS_OBRIGATORIAS = [
     "ID da Equipe",
@@ -1847,7 +1571,6 @@ COLUNAS_OBRIGATORIAS = [
     "Conformidade",
 ]
 
-
 colunas_faltantes = [
     coluna
     for coluna
@@ -1855,7 +1578,6 @@ colunas_faltantes = [
     if coluna
     not in df.columns
 ]
-
 
 if colunas_faltantes:
 
@@ -1870,11 +1592,6 @@ if colunas_faltantes:
 
     st.stop()
 
-
-# ============================================================
-# TRATAMENTO GERAL
-# ============================================================
-
 df[
     "Data de Execução"
 ] = pd.to_datetime(
@@ -1883,7 +1600,6 @@ df[
     ],
     errors="coerce"
 )
-
 
 df = (
     df
@@ -1896,7 +1612,6 @@ df = (
     .copy()
 )
 
-
 df[
     "ID da Equipe"
 ] = normalizar_id(
@@ -1904,7 +1619,6 @@ df[
         "ID da Equipe"
     ]
 )
-
 
 df[
     "Tipo de Liderança"
@@ -1917,7 +1631,6 @@ df[
     )
 )
 
-
 df[
     "É Liderança"
 ] = (
@@ -1926,7 +1639,6 @@ df[
     ]
     .notna()
 )
-
 
 df[
     "Perfil Não Líder"
@@ -1938,7 +1650,6 @@ df[
         classificar_nao_lider
     )
 )
-
 
 df[
     "Conformidade Normalizada"
@@ -1952,7 +1663,6 @@ df[
     )
 )
 
-
 df[
     "Origem Padronizada"
 ] = (
@@ -1963,7 +1673,6 @@ df[
         padronizar_origem
     )
 )
-
 
 df[
     "Chave Equipe"
@@ -1982,11 +1691,6 @@ df[
     .astype(str)
     .str.strip()
 )
-
-
-# ============================================================
-# SIDEBAR
-# ============================================================
 
 if logo_eqtl_b64:
 
@@ -2015,20 +1719,13 @@ if logo_eqtl_b64:
         """
     )
 
-
 st.sidebar.markdown(
     "### Configuração"
 )
 
-
 st.sidebar.caption(
     "Fonte de dados: ESS"
 )
-
-
-# ============================================================
-# DISTRIBUIDORA
-# ============================================================
 
 distribuidoras_presentes = set(
     df[
@@ -2038,7 +1735,6 @@ distribuidoras_presentes = set(
     .unique()
 )
 
-
 distribuidoras_disponiveis = [
     nome
     for _, nome
@@ -2046,7 +1742,6 @@ distribuidoras_disponiveis = [
     if nome
     in distribuidoras_presentes
 ]
-
 
 opcoes_distribuidora = (
     [
@@ -2056,14 +1751,12 @@ opcoes_distribuidora = (
     distribuidoras_disponiveis
 )
 
-
 distribuidora_selecionada = (
     st.sidebar.selectbox(
         "Distribuidora",
         opcoes_distribuidora
     )
 )
-
 
 if (
     distribuidora_selecionada
@@ -2088,11 +1781,6 @@ else:
         df.copy()
     )
 
-
-# ============================================================
-# ANO
-# ============================================================
-
 anos = sorted(
     df_distribuidora[
         "Data de Execução"
@@ -2102,7 +1790,6 @@ anos = sorted(
     .unique()
 )
 
-
 if not anos:
 
     st.warning(
@@ -2111,18 +1798,12 @@ if not anos:
 
     st.stop()
 
-
 ano = st.sidebar.selectbox(
     "Ano de análise",
     anos,
     index=
         len(anos) - 1
 )
-
-
-# ============================================================
-# PRIMEIRO SEMESTRE
-# ============================================================
 
 df_periodo = (
     df_distribuidora[
@@ -2149,7 +1830,6 @@ df_periodo = (
     .copy()
 )
 
-
 if df_periodo.empty:
 
     st.warning(
@@ -2157,17 +1837,6 @@ if df_periodo.empty:
     )
 
     st.stop()
-
-
-# ============================================================
-# UNIVERSO DE EQUIPES
-# ============================================================
-#
-# O universo é criado antes de filtrar PMS.
-#
-# Dessa forma, uma equipe sem PMS continua
-# aparecendo no denominador da taxa de contato.
-# ============================================================
 
 cadastro_equipes = (
     df_periodo[
@@ -2185,7 +1854,6 @@ cadastro_equipes = (
     )
 )
 
-
 todas_equipes = sorted(
     cadastro_equipes[
         "Chave Equipe"
@@ -2193,11 +1861,9 @@ todas_equipes = sorted(
     .unique()
 )
 
-
 total_equipes = len(
     todas_equipes
 )
-
 
 if total_equipes == 0:
 
@@ -2206,11 +1872,6 @@ if total_equipes == 0:
     )
 
     st.stop()
-
-
-# ============================================================
-# BASE DE CONTEXTO
-# ============================================================
 
 df_contexto = (
     df_periodo[
@@ -2224,11 +1885,6 @@ df_contexto = (
     .copy()
 )
 
-
-# ============================================================
-# BASE PRINCIPAL - PMS
-# ============================================================
-
 df_pms = (
     df_contexto[
         df_contexto[
@@ -2240,11 +1896,6 @@ df_pms = (
     .copy()
 )
 
-
-# ============================================================
-# PMS - LIDERANÇA
-# ============================================================
-
 df_pms_lideranca = (
     df_pms[
         df_pms[
@@ -2253,11 +1904,6 @@ df_pms_lideranca = (
     ]
     .copy()
 )
-
-
-# ============================================================
-# TODAS AS ORIGENS - LIDERANÇA
-# ============================================================
 
 df_contexto_lideranca = (
     df_contexto[
@@ -2268,11 +1914,6 @@ df_contexto_lideranca = (
     .copy()
 )
 
-
-# ============================================================
-# PMS - NÃO LÍDERES
-# ============================================================
-
 df_pms_nao_lider = (
     df_pms[
         ~df_pms[
@@ -2281,7 +1922,6 @@ df_pms_nao_lider = (
     ]
     .copy()
 )
-
 
 df_pms_nao_lider = (
     df_pms_nao_lider[
@@ -2298,7 +1938,6 @@ df_pms_nao_lider = (
     .copy()
 )
 
-
 df_pms_nao_lider_limpo = (
     df_pms_nao_lider[
         df_pms_nao_lider[
@@ -2310,11 +1949,6 @@ df_pms_nao_lider_limpo = (
     .copy()
 )
 
-
-# ============================================================
-# MÊS
-# ============================================================
-
 meses = {
     1: "Janeiro",
     2: "Fevereiro",
@@ -2324,11 +1958,9 @@ meses = {
     6: "Junho",
 }
 
-
 ordem_meses = list(
     meses.values()
 )
-
 
 bases_com_mes = [
     df_pms_lideranca,
@@ -2336,7 +1968,6 @@ bases_com_mes = [
     df_pms_nao_lider,
     df_pms_nao_lider_limpo,
 ]
-
 
 for base in bases_com_mes:
 
@@ -2349,7 +1980,6 @@ for base in bases_com_mes:
         .dt.month
     )
 
-
     base[
         "Mês"
     ] = (
@@ -2361,11 +1991,6 @@ for base in bases_com_mes:
         )
     )
 
-
-# ============================================================
-# META DE LIDERANÇA
-# ============================================================
-
 siglas_no_recorte = sorted(
     df_periodo[
         "Sigla Distribuidora"
@@ -2373,7 +1998,6 @@ siglas_no_recorte = sorted(
     .dropna()
     .unique()
 )
-
 
 metas_encontradas = [
     META_LIDERES[
@@ -2384,7 +2008,6 @@ metas_encontradas = [
     if sigla
     in META_LIDERES
 ]
-
 
 if (
     len(siglas_no_recorte)
@@ -2400,7 +2023,6 @@ if (
         ]
     )
 
-
 elif (
     len(siglas_no_recorte) > 0
     and
@@ -2413,15 +2035,9 @@ elif (
         metas_encontradas
     )
 
-
 else:
 
     meta_lideres = None
-
-
-# ============================================================
-# INSPEÇÕES PMS POR EQUIPE / MÊS
-# ============================================================
 
 if df_pms_lideranca.empty:
 
@@ -2459,7 +2075,6 @@ else:
         )
     )
 
-
     inspecoes_equipe_mes = (
         inspecoes_equipe_mes
         .reindex(
@@ -2468,7 +2083,6 @@ else:
             fill_value=0
         )
     )
-
 
     inspecoes_equipe_mes = (
         inspecoes_equipe_mes
@@ -2485,22 +2099,15 @@ else:
         )
     )
 
-
 inspecoes_equipe_mes.columns = (
     ordem_meses
 )
-
-
-# ============================================================
-# COBERTURA
-# ============================================================
 
 teve_contato = (
     inspecoes_equipe_mes
     >
     0
 )
-
 
 contato_t1 = (
     teve_contato[
@@ -2515,7 +2122,6 @@ contato_t1 = (
     )
 )
 
-
 contato_t2 = (
     teve_contato[
         [
@@ -2529,7 +2135,6 @@ contato_t2 = (
     )
 )
 
-
 contato_semestre = (
     teve_contato
     .any(
@@ -2537,20 +2142,13 @@ contato_semestre = (
     )
 )
 
-
-# ============================================================
-# TAXA DE CONTATO
-# ============================================================
-
 equipes_contato_t1 = int(
     contato_t1.sum()
 )
 
-
 equipes_contato_t2 = int(
     contato_t2.sum()
 )
-
 
 equipes_sem_contato_t1 = (
     total_equipes
@@ -2558,13 +2156,11 @@ equipes_sem_contato_t1 = (
     equipes_contato_t1
 )
 
-
 equipes_sem_contato_t2 = (
     total_equipes
     -
     equipes_contato_t2
 )
-
 
 taxa_t1 = (
     equipes_contato_t1
@@ -2572,13 +2168,11 @@ taxa_t1 = (
     total_equipes
 )
 
-
 taxa_t2 = (
     equipes_contato_t2
     /
     total_equipes
 )
-
 
 gap_t1 = (
     META_TAXA_CONTATO
@@ -2586,17 +2180,11 @@ gap_t1 = (
     taxa_t1
 ) * 100
 
-
 gap_t2 = (
     META_TAXA_CONTATO
     -
     taxa_t2
 ) * 100
-
-
-# ============================================================
-# INSPEÇÕES PMS - T1 / T2 / SEMESTRE
-# ============================================================
 
 base_t1 = (
     df_pms_lideranca[
@@ -2610,7 +2198,6 @@ base_t1 = (
     ]
 )
 
-
 base_t2 = (
     df_pms_lideranca[
         df_pms_lideranca[
@@ -2623,25 +2210,17 @@ base_t2 = (
     ]
 )
 
-
 resumo_t1 = resumo_inspecoes(
     base_t1
 )
-
 
 resumo_t2 = resumo_inspecoes(
     base_t2
 )
 
-
 resumo_semestre = resumo_inspecoes(
     df_pms_lideranca
 )
-
-
-# ============================================================
-# TABELA RESUMO DAS INSPEÇÕES
-# ============================================================
 
 tabela_resumo_inspecoes = (
     pd.DataFrame(
@@ -2709,11 +2288,6 @@ tabela_resumo_inspecoes = (
     )
 )
 
-
-# ============================================================
-# LIDERANÇAS ATIVAS
-# ============================================================
-
 lideres_ativos = (
     df_pms_lideranca[
         "Inspetor"
@@ -2728,11 +2302,6 @@ lideres_ativos = (
     .dropna()
     .nunique()
 )
-
-
-# ============================================================
-# LIDERANÇA POR TIPO
-# ============================================================
 
 lideres_por_tipo = (
     df_pms_lideranca
@@ -2749,19 +2318,12 @@ lideres_por_tipo = (
     .reset_index()
 )
 
-
 lideres_por_tipo.columns = [
     "Tipo de liderança",
     "Pessoas com inspeção PMS",
 ]
 
-
-# ============================================================
-# LIDERANÇAS ATIVAS POR MÊS
-# ============================================================
-
 lideres_mensais = []
-
 
 for numero_mes, nome_mes in meses.items():
 
@@ -2774,7 +2336,6 @@ for numero_mes, nome_mes in meses.items():
             numero_mes
         ]
     )
-
 
     quantidade = (
         base_mes[
@@ -2791,7 +2352,6 @@ for numero_mes, nome_mes in meses.items():
         .nunique()
     )
 
-
     lideres_mensais.append(
         {
             "Mês":
@@ -2804,17 +2364,11 @@ for numero_mes, nome_mes in meses.items():
         }
     )
 
-
 lideres_mensais = (
     pd.DataFrame(
         lideres_mensais
     )
 )
-
-
-# ============================================================
-# PARTICIPAÇÃO DA LIDERANÇA
-# ============================================================
 
 if (
     meta_lideres is not None
@@ -2832,13 +2386,7 @@ else:
 
     aderencia_lideres = None
 
-
-# ============================================================
-# COBERTURA MENSAL
-# ============================================================
-
 resumo_cobertura_mensal = []
-
 
 for numero_mes, nome_mes in meses.items():
 
@@ -2849,13 +2397,11 @@ for numero_mes, nome_mes in meses.items():
         .sum()
     )
 
-
     sem_contato = (
         total_equipes
         -
         com_contato
     )
-
 
     resumo_cobertura_mensal.append(
         {
@@ -2870,17 +2416,11 @@ for numero_mes, nome_mes in meses.items():
         }
     )
 
-
 resumo_cobertura_mensal = (
     pd.DataFrame(
         resumo_cobertura_mensal
     )
 )
-
-
-# ============================================================
-# INSPEÇÕES POR ORIGEM
-# ============================================================
 
 inspecoes_origem = (
     df_contexto_lideranca[
@@ -2899,7 +2439,6 @@ inspecoes_origem = (
     .drop_duplicates()
 )
 
-
 inspecoes_por_origem = (
     inspecoes_origem
     .groupby(
@@ -2912,7 +2451,6 @@ inspecoes_por_origem = (
     )
 )
 
-
 ordem_origens = [
     "PMS",
     "Rotina",
@@ -2920,7 +2458,6 @@ ordem_origens = [
     "Altas Horas",
     "Outras",
 ]
-
 
 inspecoes_por_origem[
     "Ordem"
@@ -2943,7 +2480,6 @@ inspecoes_por_origem[
     )
 )
 
-
 inspecoes_por_origem = (
     inspecoes_por_origem
     .sort_values(
@@ -2951,11 +2487,9 @@ inspecoes_por_origem = (
     )
 )
 
-
 total_inspecoes_contexto = len(
     inspecoes_origem
 )
-
 
 total_inspecoes_pms = (
     resumo_semestre[
@@ -2963,18 +2497,12 @@ total_inspecoes_pms = (
     ]
 )
 
-
 total_inspecoes_outras_origens = max(
     total_inspecoes_contexto
     -
     total_inspecoes_pms,
     0
 )
-
-
-# ============================================================
-# NÃO LÍDERES
-# ============================================================
 
 total_inspetores_nao_lideres = (
     df_pms_nao_lider_limpo[
@@ -2990,7 +2518,6 @@ total_inspetores_nao_lideres = (
     .dropna()
     .nunique()
 )
-
 
 nao_lideres_resumo = (
     df_pms_nao_lider_limpo
@@ -3020,11 +2547,6 @@ nao_lideres_resumo = (
         ascending=False
     )
 )
-
-
-# ============================================================
-# CONFORMIDADES
-# ============================================================
 
 if df_pms_lideranca.empty:
 
@@ -3074,7 +2596,6 @@ else:
         )
     )
 
-
     status_inspecoes[
         "Status"
     ] = (
@@ -3092,7 +2613,6 @@ else:
         )
     )
 
-
     status_inspecoes[
         "Mês Número"
     ] = (
@@ -3101,7 +2621,6 @@ else:
         ]
         .dt.month
     )
-
 
     status_inspecoes[
         "Mês"
@@ -3114,11 +2633,9 @@ else:
         )
     )
 
-
 total_inspecoes_analisadas = len(
     status_inspecoes
 )
-
 
 total_conformes = int(
     (
@@ -3131,7 +2648,6 @@ total_conformes = int(
     .sum()
 )
 
-
 total_nao_conformes = int(
     (
         status_inspecoes[
@@ -3142,7 +2658,6 @@ total_nao_conformes = int(
     )
     .sum()
 )
-
 
 if total_inspecoes_analisadas > 0:
 
@@ -3156,11 +2671,6 @@ else:
 
     taxa_conformidade = 0
 
-
-# ============================================================
-# DETALHE DAS NÃO CONFORMIDADES
-# ============================================================
-
 nc_detalhe = (
     df_pms_lideranca[
         df_pms_lideranca[
@@ -3171,7 +2681,6 @@ nc_detalhe = (
     ]
     .copy()
 )
-
 
 if (
     "Não Conformidade"
@@ -3191,7 +2700,6 @@ if (
         .str.strip()
     )
 
-
     nc_detalhe.loc[
         nc_detalhe[
             "Não Conformidade"
@@ -3202,7 +2710,6 @@ if (
     ] = (
         "Sem descrição informada"
     )
-
 
     chaves_nc = [
         coluna
@@ -3217,7 +2724,6 @@ if (
         in nc_detalhe.columns
     ]
 
-
     if chaves_nc:
 
         nc_detalhe = (
@@ -3228,11 +2734,6 @@ if (
             )
         )
 
-
-# ============================================================
-# 1. OPERAÇÃO SEGURA - PMS
-# ============================================================
-
 titulo_secao(
     "Operação Segura — PMS",
     (
@@ -3240,7 +2741,6 @@ titulo_secao(
         "do ESS com origem PMS."
     )
 )
-
 
 st.html(
     """
@@ -3262,15 +2762,9 @@ st.html(
     """
 )
 
-
-# ============================================================
-# TAXA DE CONTATO
-# ============================================================
-
 c1, c2, c3, c4 = st.columns(
     4
 )
-
 
 with c1:
 
@@ -3280,7 +2774,6 @@ with c1:
         "equipes com contato em até 3 meses",
         AMARELO
     )
-
 
 with c2:
 
@@ -3294,7 +2787,6 @@ with c2:
         LARANJA
     )
 
-
 with c3:
 
     card_kpi(
@@ -3307,7 +2799,6 @@ with c3:
         LARANJA
     )
 
-
 with c4:
 
     card_kpi(
@@ -3317,13 +2808,7 @@ with c4:
         AZUL_PRINCIPAL
     )
 
-
-# ============================================================
-# TAXA X META
-# ============================================================
-
 fig_meta = go.Figure()
-
 
 fig_meta.add_trace(
     go.Bar(
@@ -3356,7 +2841,6 @@ fig_meta.add_trace(
     )
 )
 
-
 fig_meta.add_hline(
 
     y=
@@ -3378,7 +2862,6 @@ fig_meta.add_hline(
         "top right",
 )
 
-
 fig_meta.update_yaxes(
 
     range=[
@@ -3390,7 +2873,6 @@ fig_meta.update_yaxes(
         "% das equipes com contato",
 )
 
-
 aplicar_layout_plotly(
     fig_meta,
     (
@@ -3399,16 +2881,10 @@ aplicar_layout_plotly(
     )
 )
 
-
 st.plotly_chart(
     fig_meta,
     use_container_width=True
 )
-
-
-# ============================================================
-# 2. VOLUME X COBERTURA
-# ============================================================
 
 titulo_secao(
     "Volume de inspeções x cobertura das equipes",
@@ -3418,11 +2894,9 @@ titulo_secao(
     )
 )
 
-
 c1, c2, c3, c4 = st.columns(
     4
 )
-
 
 with c1:
 
@@ -3435,7 +2909,6 @@ with c1:
         AZUL_PRINCIPAL
     )
 
-
 with c2:
 
     card_kpi(
@@ -3446,7 +2919,6 @@ with c2:
         "cada equipe é contada apenas uma vez",
         VERDE
     )
-
 
 with c3:
 
@@ -3459,7 +2931,6 @@ with c3:
         LARANJA
     )
 
-
 with c4:
 
     card_kpi(
@@ -3468,7 +2939,6 @@ with c4:
         "pessoas com pelo menos uma inspeção",
         AZUL_MEDIO
     )
-
 
 st.html(
     """
@@ -3492,17 +2962,11 @@ st.html(
     """
 )
 
-
 st.dataframe(
     tabela_resumo_inspecoes,
     use_container_width=True,
     hide_index=True,
 )
-
-
-# ============================================================
-# 3. LIDERANÇA
-# ============================================================
 
 titulo_secao(
     "Participação da liderança na Operação Segura",
@@ -3512,11 +2976,9 @@ titulo_secao(
     )
 )
 
-
 c1, c2, c3 = st.columns(
     3
 )
-
 
 with c1:
 
@@ -3526,7 +2988,6 @@ with c1:
         "pessoas com pelo menos uma inspeção PMS",
         AZUL_PRINCIPAL
     )
-
 
 with c2:
 
@@ -3549,7 +3010,6 @@ with c2:
         AMARELO
     )
 
-
 with c3:
 
     card_kpi(
@@ -3571,15 +3031,9 @@ with c3:
         AZUL_MEDIO
     )
 
-
-# ============================================================
-# GRÁFICOS DA LIDERANÇA
-# ============================================================
-
 col1, col2 = st.columns(
     2
 )
-
 
 with col1:
 
@@ -3618,18 +3072,15 @@ with col1:
         }
     )
 
-
     fig_tipo.update_traces(
         textposition=
             "outside"
     )
 
-
     fig_tipo.update_layout(
         showlegend=
             False
     )
-
 
     aplicar_layout_plotly(
         fig_tipo,
@@ -3639,28 +3090,23 @@ with col1:
         )
     )
 
-
     fig_tipo.update_yaxes(
         title=
             "Quantidade de pessoas"
     )
 
-
     fig_tipo.update_xaxes(
         title=""
     )
-
 
     st.plotly_chart(
         fig_tipo,
         use_container_width=True
     )
 
-
 with col2:
 
     fig_lideres_mes = go.Figure()
-
 
     fig_lideres_mes.add_trace(
         go.Bar(
@@ -3697,7 +3143,6 @@ with col2:
         )
     )
 
-
     if (
         meta_lideres
         is not None
@@ -3724,7 +3169,6 @@ with col2:
                 "top right",
         )
 
-
     aplicar_layout_plotly(
         fig_lideres_mes,
         (
@@ -3733,34 +3177,25 @@ with col2:
         )
     )
 
-
     fig_lideres_mes.update_yaxes(
         title=
             "Quantidade de pessoas"
     )
 
-
     fig_lideres_mes.update_xaxes(
         title=""
     )
-
 
     st.plotly_chart(
         fig_lideres_mes,
         use_container_width=True
     )
 
-
 st.dataframe(
     lideres_por_tipo,
     use_container_width=True,
     hide_index=True
 )
-
-
-# ============================================================
-# 4. COBERTURA MENSAL
-# ============================================================
 
 titulo_secao(
     "Cobertura mensal das equipes no PMS",
@@ -3770,9 +3205,7 @@ titulo_secao(
     )
 )
 
-
 fig_cobertura = go.Figure()
-
 
 fig_cobertura.add_trace(
     go.Bar(
@@ -3809,7 +3242,6 @@ fig_cobertura.add_trace(
     )
 )
 
-
 fig_cobertura.add_trace(
     go.Bar(
 
@@ -3839,12 +3271,10 @@ fig_cobertura.add_trace(
     )
 )
 
-
 fig_cobertura.update_layout(
     barmode=
         "stack"
 )
-
 
 aplicar_layout_plotly(
     fig_cobertura,
@@ -3854,27 +3284,19 @@ aplicar_layout_plotly(
     )
 )
 
-
 fig_cobertura.update_yaxes(
     title=
         "Quantidade de equipes"
 )
 
-
 fig_cobertura.update_xaxes(
     title=""
 )
-
 
 st.plotly_chart(
     fig_cobertura,
     use_container_width=True
 )
-
-
-# ============================================================
-# 5. OUTRAS ORIGENS
-# ============================================================
 
 titulo_secao(
     "Esforço da liderança além do PMS",
@@ -3884,11 +3306,9 @@ titulo_secao(
     )
 )
 
-
 c1, c2, c3 = st.columns(
     3
 )
-
 
 with c1:
 
@@ -3899,7 +3319,6 @@ with c1:
         AZUL_PRINCIPAL
     )
 
-
 with c2:
 
     card_kpi(
@@ -3909,7 +3328,6 @@ with c2:
         AZUL_MEDIO
     )
 
-
 with c3:
 
     card_kpi(
@@ -3918,7 +3336,6 @@ with c3:
         "PMS + demais origens do recorte ESS",
         AMARELO
     )
-
 
 if not inspecoes_por_origem.empty:
 
@@ -3937,9 +3354,7 @@ if not inspecoes_por_origem.empty:
         ]
     ]
 
-
     fig_origem = go.Figure()
-
 
     fig_origem.add_trace(
         go.Bar(
@@ -3967,7 +3382,6 @@ if not inspecoes_por_origem.empty:
         )
     )
 
-
     aplicar_layout_plotly(
         fig_origem,
         (
@@ -3976,32 +3390,23 @@ if not inspecoes_por_origem.empty:
         )
     )
 
-
     fig_origem.update_xaxes(
         title=""
     )
-
 
     fig_origem.update_yaxes(
         title=
             "Quantidade de inspeções"
     )
 
-
     fig_origem.update_layout(
         showlegend=False
     )
-
 
     st.plotly_chart(
         fig_origem,
         use_container_width=True
     )
-
-
-# ============================================================
-# 6. NÃO LÍDERES
-# ============================================================
 
 titulo_secao(
     "Participação de não líderes no PMS",
@@ -4011,11 +3416,9 @@ titulo_secao(
     )
 )
 
-
 c1, c2 = st.columns(
     2
 )
-
 
 with c1:
 
@@ -4025,7 +3428,6 @@ with c1:
         "pessoas identificadas no ESS",
         AZUL_MEDIO
     )
-
 
 with c2:
 
@@ -4039,7 +3441,6 @@ with c2:
         AMARELO
     )
 
-
 if not nao_lideres_resumo.empty:
 
     grafico_nao_lideres = (
@@ -4052,7 +3453,6 @@ if not nao_lideres_resumo.empty:
             ascending=True
         )
     )
-
 
     fig_nao_lideres = px.bar(
 
@@ -4071,7 +3471,6 @@ if not nao_lideres_resumo.empty:
             "Inspetores",
     )
 
-
     fig_nao_lideres.update_traces(
 
         marker_color=
@@ -4081,7 +3480,6 @@ if not nao_lideres_resumo.empty:
             "outside",
     )
 
-
     aplicar_layout_plotly(
         fig_nao_lideres,
         (
@@ -4090,34 +3488,25 @@ if not nao_lideres_resumo.empty:
         )
     )
 
-
     fig_nao_lideres.update_yaxes(
         title=""
     )
-
 
     fig_nao_lideres.update_xaxes(
         title=
             "Quantidade de pessoas"
     )
 
-
     st.plotly_chart(
         fig_nao_lideres,
         use_container_width=True
     )
-
 
     st.dataframe(
         nao_lideres_resumo,
         use_container_width=True,
         hide_index=True
     )
-
-
-# ============================================================
-# 7. CONFORMIDADES
-# ============================================================
 
 titulo_secao(
     "Conformidades e não conformidades no PMS",
@@ -4127,11 +3516,9 @@ titulo_secao(
     )
 )
 
-
 c1, c2, c3, c4 = st.columns(
     4
 )
-
 
 with c1:
 
@@ -4142,7 +3529,6 @@ with c1:
         AZUL_PRINCIPAL
     )
 
-
 with c2:
 
     card_kpi(
@@ -4151,7 +3537,6 @@ with c2:
         "inspeções sem NC registrada",
         VERDE
     )
-
 
 with c3:
 
@@ -4162,7 +3547,6 @@ with c3:
         LARANJA
     )
 
-
 with c4:
 
     card_kpi(
@@ -4171,7 +3555,6 @@ with c4:
         "inspeções sem NC ÷ inspeções analisadas",
         VERDE
     )
-
 
 if not status_inspecoes.empty:
 
@@ -4191,7 +3574,6 @@ if not status_inspecoes.empty:
         )
     )
 
-
     conformidade_mensal[
         "Mês"
     ] = pd.Categorical(
@@ -4206,14 +3588,12 @@ if not status_inspecoes.empty:
         ordered=True
     )
 
-
     conformidade_mensal = (
         conformidade_mensal
         .sort_values(
             "Mês"
         )
     )
-
 
     fig_conformidade = px.bar(
 
@@ -4244,12 +3624,10 @@ if not status_inspecoes.empty:
         }
     )
 
-
     fig_conformidade.update_traces(
         textposition=
             "outside"
     )
-
 
     aplicar_layout_plotly(
         fig_conformidade,
@@ -4259,27 +3637,19 @@ if not status_inspecoes.empty:
         )
     )
 
-
     fig_conformidade.update_yaxes(
         title=
             "Quantidade de inspeções"
     )
 
-
     fig_conformidade.update_xaxes(
         title=""
     )
-
 
     st.plotly_chart(
         fig_conformidade,
         use_container_width=True
     )
-
-
-# ============================================================
-# PRINCIPAIS NÃO CONFORMIDADES
-# ============================================================
 
 if (
     not nc_detalhe.empty
@@ -4296,12 +3666,10 @@ if (
         .reset_index()
     )
 
-
     ranking_nc.columns = [
         "Descrição",
         "Ocorrências",
     ]
-
 
     top_nc = (
         ranking_nc
@@ -4313,7 +3681,6 @@ if (
             ascending=True
         )
     )
-
 
     fig_nc = px.bar(
 
@@ -4332,7 +3699,6 @@ if (
             "Ocorrências",
     )
 
-
     fig_nc.update_traces(
 
         marker_color=
@@ -4342,12 +3708,10 @@ if (
             "outside",
     )
 
-
     fig_nc.update_layout(
         height=
             620
     )
-
 
     aplicar_layout_plotly(
         fig_nc,
@@ -4357,21 +3721,14 @@ if (
         )
     )
 
-
     fig_nc.update_yaxes(
         title=""
     )
-
 
     st.plotly_chart(
         fig_nc,
         use_container_width=True
     )
-
-
-# ============================================================
-# DETALHAMENTO DAS NÃO CONFORMIDADES
-# ============================================================
 
 titulo_secao(
     "Detalhamento das não conformidades",
@@ -4380,7 +3737,6 @@ titulo_secao(
         "às inspeções PMS da liderança."
     )
 )
-
 
 if not nc_detalhe.empty:
 
@@ -4401,7 +3757,6 @@ if not nc_detalhe.empty:
         "Tipo de Serviço",
     ]
 
-
     colunas_nc = [
         coluna
         for coluna
@@ -4409,7 +3764,6 @@ if not nc_detalhe.empty:
         if coluna
         in nc_detalhe.columns
     ]
-
 
     tabela_nc = (
         nc_detalhe[
@@ -4421,13 +3775,11 @@ if not nc_detalhe.empty:
         )
     )
 
-
     st.dataframe(
         tabela_nc,
         use_container_width=True,
         hide_index=True,
     )
-
 
 else:
 
@@ -4435,11 +3787,6 @@ else:
         "Nenhuma não conformidade encontrada "
         "nas inspeções PMS do recorte selecionado."
     )
-
-
-# ============================================================
-# 8. INSPEÇÕES POR EQUIPE
-# ============================================================
 
 titulo_secao(
     "Inspeções PMS por equipe",
@@ -4450,12 +3797,10 @@ titulo_secao(
     )
 )
 
-
 tabela_equipes = (
     inspecoes_equipe_mes
     .copy()
 )
-
 
 tabela_equipes[
     "Total no semestre"
@@ -4468,12 +3813,10 @@ tabela_equipes[
     )
 )
 
-
 tabela_equipes = (
     tabela_equipes
     .reset_index()
 )
-
 
 tabela_equipes = (
     tabela_equipes
@@ -4485,7 +3828,6 @@ tabela_equipes = (
             "left"
     )
 )
-
 
 colunas_tabela_equipes = [
     "Distribuidora",
@@ -4499,7 +3841,6 @@ colunas_tabela_equipes = [
     "Total no semestre",
 ]
 
-
 tabela_equipes = (
     tabela_equipes[
         [
@@ -4511,7 +3852,6 @@ tabela_equipes = (
         ]
     ]
 )
-
 
 opcao_equipes = st.radio(
 
@@ -4525,7 +3865,6 @@ opcao_equipes = st.radio(
 
     horizontal=True,
 )
-
 
 if (
     opcao_equipes
@@ -4543,7 +3882,6 @@ if (
         ]
     )
 
-
 elif (
     opcao_equipes
     ==
@@ -4560,7 +3898,6 @@ elif (
         ]
     )
 
-
 else:
 
     tabela_exibicao = (
@@ -4568,17 +3905,11 @@ else:
         .copy()
     )
 
-
 st.dataframe(
     tabela_exibicao,
     use_container_width=True,
     hide_index=True,
 )
-
-
-# ============================================================
-# 9. VALIDAÇÃO COM A BASE ESS
-# ============================================================
 
 titulo_secao(
     "Validação com a base ESS",
@@ -4587,7 +3918,6 @@ titulo_secao(
         "com os registros oficiais extraídos do ESS."
     )
 )
-
 
 st.html(
     """
@@ -4612,11 +3942,6 @@ st.html(
     """
 )
 
-
-# ============================================================
-# MEMÓRIA DE CÁLCULO
-# ============================================================
-
 with st.expander(
     "Memória de cálculo / validação ESS"
 ):
@@ -4625,36 +3950,30 @@ with st.expander(
         "Fonte de dados: **ESS**"
     )
 
-
     st.write(
         f"Distribuidora: "
         f"**{distribuidora_selecionada}**"
     )
-
 
     st.write(
         f"Ano: "
         f"**{ano}**"
     )
 
-
     st.write(
         f"Equipes identificadas na base ESS: "
         f"**{total_equipes}**"
     )
-
 
     st.write(
         f"Total de inspeções PMS da liderança: "
         f"**{resumo_semestre['total']}**"
     )
 
-
     st.write(
         f"Equipes únicas com contato PMS: "
         f"**{resumo_semestre['equipes']}**"
     )
-
 
     st.write(
         f"Inspeções realizadas em equipes "
@@ -4662,76 +3981,60 @@ with st.expander(
         f"**{resumo_semestre['repetidas']}**"
     )
 
-
     st.write(
         f"Taxa de Contato T1: "
         f"**{taxa_t1:.1%}**"
     )
-
 
     st.write(
         f"Gap T1 para 100%: "
         f"**{gap_t1:.1f} p.p.**"
     )
 
-
     st.write(
         f"Equipes sem contato no T1: "
         f"**{equipes_sem_contato_t1}**"
     )
-
 
     st.write(
         f"Taxa de Contato T2: "
         f"**{taxa_t2:.1%}**"
     )
 
-
     st.write(
         f"Gap T2 para 100%: "
         f"**{gap_t2:.1f} p.p.**"
     )
-
 
     st.write(
         f"Equipes sem contato no T2: "
         f"**{equipes_sem_contato_t2}**"
     )
 
-
     st.write(
         f"Lideranças que realizaram PMS: "
         f"**{lideres_ativos}**"
     )
-
 
     st.write(
         f"Meta de lideranças: "
         f"**{meta_lideres if meta_lideres is not None else 'N/D'}**"
     )
 
-
     st.write(
         f"Inspetores não líderes classificados: "
         f"**{total_inspetores_nao_lideres}**"
     )
-
 
     st.write(
         f"Inspeções PMS sem NC: "
         f"**{total_conformes}**"
     )
 
-
     st.write(
         f"Inspeções PMS com NC: "
         f"**{total_nao_conformes}**"
     )
-
-
-    # ========================================================
-    # CARGOS AINDA NÃO CLASSIFICADOS
-    # ========================================================
 
     cargos_outros = (
         df_pms_nao_lider[
@@ -4750,7 +4053,6 @@ with st.expander(
         .reset_index()
     )
 
-
     if not cargos_outros.empty:
 
         cargos_outros.columns = [
@@ -4758,28 +4060,20 @@ with st.expander(
             "Quantidade de registros",
         ]
 
-
         st.write(
             "#### Cargos do ESS ainda classificados como Outros"
         )
-
 
         st.caption(
             "Essa tabela ajuda a identificar novos cargos "
             "que precisam ser incluídos na padronização."
         )
 
-
         st.dataframe(
             cargos_outros,
             use_container_width=True,
             hide_index=True,
         )
-
-
-# ============================================================
-# ERROS DE CARREGAMENTO
-# ============================================================
 
 if not erros_carregamento.empty:
 
@@ -4792,11 +4086,6 @@ if not erros_carregamento.empty:
             use_container_width=True,
             hide_index=True,
         )
-
-
-# ============================================================
-# FOOTER
-# ============================================================
 
 st.html(
     f"""
