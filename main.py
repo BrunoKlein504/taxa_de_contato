@@ -925,7 +925,9 @@ st.html(
 
     }}
 
-
+    [class*="_profileContainer"] {
+        display: none !important;
+    }
     [data-testid="stSidebar"] * {{
 
         color:
