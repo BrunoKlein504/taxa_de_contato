@@ -1760,7 +1760,14 @@ st.html(
     </div>
     """
 )
-
+st.html("""
+<style>
+[class*="_profileContainer"],
+[class*="_viewerBadge"] {
+    display: none !important;
+}
+</style>
+""")
 
 # ============================================================
 # LOCALIZA OS ARQUIVOS ESS
